@@ -1,0 +1,27 @@
+{
+	"manifest_version": 2,
+
+	"name": "Getting started",
+	"description": "This extension shows a Google Image search result for the current page",
+	"version": "1.0",
+
+	"browser_action": {
+	    "default_icon": "icons/icon.png",
+	    "default_popup": "popup.html"
+	},
+
+	"permissions": [
+	    "activeTab"
+	],
+
+	"background": {
+		"scripts": ["background.js"]
+	},
+
+	"content_scripts": [
+		{
+			"matches": ["http://*/*", "https://*/*", "ftp://*/*"],
+			"js": ["content_script.js"]
+		}
+	]
+}

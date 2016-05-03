@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Main Page</title>
+	<meta charset="UTF-8">
+	<script type="text/javascript" src="main-page.js"></script>
+</head>
+<body>
+	<div id="head">
+		<p><span class="label">校验码：</span><span class="content">checksum</span></p>
+	</div>
+
+	<table id="password_table">
+		<tr>
+			<th>域名</th>
+			<th>用户名</th>
+			<th>密码</th>
+			<th>操作</th>
+		</tr>
+		<tr>
+			<td>http://www.baidu.com</td>
+			<td>username0</td>
+			<td>password0</td>
+			<td>复制&登录&删除</td>
+		</tr>
+	</table>
+
+	<div id="dialog-form">
+  		<p class="validateTips">所有的表单字段都是必填的。</p>
+	  	<form>
+	  	<fieldset>
+		    <label for="domain">域名</label>
+		    <input type="text" name="domain" id="new_domain" class="text ui-widget-content ui-corner-all">
+		    <label for="username">用户名</label>
+		    <input type="text" name="username" id="new_username" value="" class="text ui-widget-content ui-corner-all">
+		    <label for="password">密码</label>
+		    <input type="password" name="password" id="new_password" value="" class="text ui-widget-content ui-corner-all">
+	  	</fieldset>
+	  	</form>
+
+		<button id="manualAddAccount">添加</button>
+	</div>
+
+</body>
+</html>
