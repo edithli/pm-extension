@@ -16,7 +16,9 @@ var trie = new Trie(replacementJson);
 loadJSON('data/grammar.cfg', function(text){ 	
 	grammar = JSON.parse(text); 
 	console.log('grammar done');
-	buildTrie();
+	initialize();
+	// test
+	console.log(trie.getSimilarKey("h3llow0rld"));
 });
 loadJSON('data/vault_dist.cfg', function(text) { 	
 	vaultDist = JSON.parse(text); 	
@@ -37,22 +39,43 @@ function parseString(s) {
 
 }
 
-function parseWord(word) {
-	if (trie.contain(word.toLowerCase())) {
-		
+function parseWord(s) {
+	var word = trie.getSimilarKey(s.toLowerCase());
+	if (word) {
+		var rule = new Rule(getWordGroup(word), word);
+
+		return rule;
+	}
+	return null;
+}
+
+function getWordGroup(word) {
+	if (word.length == 1){
+		return "W1";
+	}else if (word.length <= 8) {
+		return "W".concat(word.length - 1);
+	} else {
+		return "W9";
 	}
 }
 
-function buildTrie(){
-	// var wordList = new Array();
+function initialize() {
+	// build trie
 	for (var i = 1; i <= 9; i++) {
-		// console.log(grammar['W'.concat(i)]);
 		var words = grammar['W'.concat(i)];
 		if (!words) { continue; }
 		for (var key in words) {
-			// wordList.push(key);
 			trie.insert(key);
 		}
+	}
+	// add total attribute of grammar
+	for (var key in grammar) {
+		var pairs = grammar[key];
+		var total = 0;
+		for (var terminal in pairs) {
+			total += pairs[terminal];
+		}
+		grammar[key]._total = total;
 	}
 }
 
@@ -80,9 +103,10 @@ function Trie(replacementJson) {
 		}
 		return null;
 	}
-	this.contain = function(s) {
+	this.getSimilarKey = function(s) {
 		var chars = s.split("");
 		var tmp = this.root;
+		var similarKey = "";
 		for (var i = 0; i < chars.length; i++) {
 			var child = tmp.findChild(chars[i]);
 			var replace = this._getReplace(chars[i]);
@@ -90,16 +114,17 @@ function Trie(replacementJson) {
 				var repchild = tmp.findChild(replace);
 			}
 			if (!child && !repchild) {
-				return false;
+				return null;
 			} else {
 				tmp = child ? child : repchild;
+				similarKey.concat((child ? chars[i] : replace));
 			}
 		}
 		var end = tmp.findChild('$');
 		if (!end) {
-			return false;
+			return null;
 		} else {
-			return true;
+			return similarKey;
 		}
 	}
 	this.insert = function(s) {
@@ -135,6 +160,23 @@ function Trie(replacementJson) {
 		}
 		this.isEnd = function() {
 			return this.char == '$';
+		}
+	}
+}
+
+function Rule(lhs, rhs) {
+	this.lhs = lhs;
+	this.rhs = rhs;
+	this.prob = 0.0;
+	this.extras = new Array();
+	this.getProb = function() {
+		var freq = grammar[lhs][rhs];
+		console.log("get freq: " + freq);
+		if (!freq) {
+			return 0.0;
+		} else {
+			this.prob =  freq / grammar[lhs]._total;
+			return this.prob;
 		}
 	}
 }
