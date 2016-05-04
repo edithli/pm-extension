@@ -1,19 +1,5 @@
-document.body.style.border = "5px solid black";
+// document.body.style.border = "5px solid black";
 console.log('content script running!');
-
-// to read in possible login information
-// var inputs = document.getElementsByTagName('INPUT');
-// for (var i = inputs.length - 1; i >= 0; i--) {
-// 	var input = inputs[i];
-// 	var type = input.type;
-// 	console.assert(typeof type == 'string', 'input type is not a string');
-// 	console.log('input type ' + input.type + ' input id: ' + input.id);
-// 	// add buttons to account id and password input elements
-// 	if (type == 'password' || input.name == 'password') {
-// 		input.style.border = "3px solid red";
-// 		console.log('password input id ' + input.id);
-// 	}
-// }
 
 // the list of all documents
 var docs = new Array();
@@ -35,65 +21,214 @@ for (var i = iFrames.length - 1; i >= 0; i--) {
 	}
 }
 console.log('the number of documents: ' + docs.length);
-var username, password;
+
+// add a popup div to body
+addPopup();
+var usernameId, passwordId;
+var hasPassword = false;
 for (var i = docs.length - 1; i >= 0; i--) {
 	var inputs = docs[i].getElementsByTagName('INPUT');
 	for (var i = inputs.length - 1; i >= 0; i--) {
 		var input = inputs[i];
-		var type = input.type;
-		console.assert(typeof type == 'string', 'input type is not a string');
 		// add buttons to account id and password input elements
-		if (type == 'password' || input.name == 'password') {
+		if ( (input.type == 'password' || input.name == 'password') && input.id != '__popup_new_password_id' ){
 			input.style.border = "3px solid red";
-			addButton(input);
-		}
+			// addButton(input);
+			hasPassword = true;
+			passwordId = input.id;
+			console.log('find password id: ' + passwordId);
+			addPopupOpener(input);
+		} else if ( (input.type == 'text' || input.type == 'email') && input.id != '__popup_new_username_id'  && hasPassword) {
+			input.style.border = "3px solid yellow";
+			hasPassword = false;
+			usernameId = input.id;
+			console.log('find username id: ' + usernameId);
+			addPopupOpener(input);
+		} 
 	}
 }
+// add event listener
+document.addEventListener('click', function(e){
+	// console.log(e.target.name + ' was clicked');
+	if (e.target.name == 'popupOpenerDiv' || e.target.name == 'popupOpenerImg'){
+		showPopup();
+	} else if (e.target.id == '__popup_cancel_btn') {
+		closePopup();
+	} else if (e.target.id == '__popup_submit_btn') {
+		console.log('save button clicked');
+		var name = document.getElementById('__popup_account_name_id');
+		var u = document.getElementById('__popup_new_username_id');
+		var p = document.getElementById('__popup_new_password_id');
+		if (!name || !u || !p){
+			console.log('element in popup not found');
+			return;
+		}
+		function hintNoInput(e) {
+			e.style.border = "2px solid red";
+		}
+		if (name.value == "") {
+			hintNoInput(name);
+			return;
+		} else if (u.value == "") {
+			hintNoInput(u);
+			return;
+		} else if (p.value == "") {
+			hintNoInput(p);
+			return;
+		}
+		var msg = {
+			aValue: name.value,
+			uValue: u.value,
+			pValue: p.value
+		}
+		chrome.runtime.sendMessage(msg, function(response){
+			console.log(response.done);
+		});
+		closePopup();
+	}
+});
 
-function addButton(input) {
-	var btn = document.createElement("BUTTON");
-	var t = document.createTextNode("+");
-	btn.appendChild(t);
+function addPopupOpener(input) {
+	var inputRect = input.getBoundingClientRect();
+	var openerDiv = document.createElement("div");
+	openerDiv.setAttribute("name", "popupOpenerDiv");
+	openerDiv.style.width = "16px";
+	openerDiv.style.height = "16px";
+	openerDiv.style.position = "absolute";
+	// openerDiv.style.verticalAlign = "top";
+	openerDiv.style.bottom = inputRect.bottom;
+	openerDiv.style.right = inputRect.right;
+	var openerImg = document.createElement("img");
+	openerImg.setAttribute("src", chrome.extension.getURL("icons/icon.png"));
+	openerImg.setAttribute("name", "popupOpenerImg");
+	openerImg.onmouseover = function() { openerImg.style.cursor = "pointer"; }
+	openerImg.onmouseout = function() { openerImg.style.cursor = "default"; }
+	// openerImg.onclick = showPopup();
+	// openerImg.addEventListener('click', showPopup());
+	openerDiv.appendChild(openerImg);
+	// document.body.appendChild(openerDiv);
 	var parent = input.parentNode;
-	console.assert(parent != null, 'parent node of input ' + input.id + ' is null');
-	parent.appendChild(btn);
+	parent.appendChild(openerDiv);
 }
 
 function addPopup(){
 	// popup a little frame to input domain, username, and password
 	var container = document.createElement("DIV");
+	container.setAttribute("id", "__popup_container_id");
 	var hint = document.createElement("P");
 	hint.appendChild(document.createTextNode("保存该网站信息"));
+	hint.style.clear = "left";
 	container.appendChild(hint);
 	var nameLabel = document.createElement("LABEL");
-	nameLabel.appendChild(document.createTextNode("名称"));
+	nameLabel.appendChild(document.createTextNode("名称:"));
+	nameLabel.style.float = "left";
+	nameLabel.style.width = "100%";
 	container.appendChild(nameLabel);
-	var nameInput = document.createElement("INPUT");
+	var nameInput = document.createElement('input');
+	nameInput.style.border = "1px solid black";
 	nameInput.setAttribute("type", "text");
-	nameInput.setAttribute("id", "accountName");
+	nameInput.setAttribute("id", "__popup_account_name_id");
+	nameInput.style.float = "left";
+	nameInput.style.width = "100%";
 	container.appendChild(nameInput);
 	var usernameLabel = document.createElement("LABEL");
-	usernameLabel.appendChild(document.createTextNode("用户名"));
+	usernameLabel.appendChild(document.createTextNode("用户名:"));
+	usernameLabel.style.float = "left";
+	usernameLabel.style.width = "100%";
 	container.appendChild(usernameLabel);
-	var usernameInput = document.createElement("INPUT")；
-	usernameInput.setAttribute("type", "text");
-	usernameInput.setAttribute("id", "username");
+	var usernameInput = document.createElement('input');
+	usernameInput.type = "text";
+	usernameInput.id = "__popup_new_username_id";
+	usernameInput.style.float = "left";
+	usernameInput.style.width = "100%";
+	usernameInput.style.border = "1px solid black";
+	// usernameInput.setAttribute("type", "text");
+	// usernameInput.setAttribute("id", "popup-username");
 	container.appendChild(usernameInput);
 	var pwdLabel = document.createElement("LABEL");
-	pwdLabel.appendChild(document.createTextNode("密码"));
+	pwdLabel.appendChild(document.createTextNode("密码:"));
+	pwdLabel.style.float = "left";
+	pwdLabel.style.width = "100%";
 	container.appendChild(pwdLabel);
-	var pwd = document.createElement("INPUT");
-	pwd.setAttribute("type", "password");
-	pwd.setAttribute("id", "password");
+	var pwd = document.createElement("input");
+	pwd.type = "password";
+	pwd.id = "__popup_new_password_id";
+	// pwd.setAttribute("type", "password");
+	// pwd.setAttribute("id", "popup-password");
+	pwd.style.float = "left";
+	pwd.style.width = "100%";
+	pwd.style.border = "1px solid black";
 	container.appendChild(pwd);
 	var btnCancel = document.createElement("BUTTON");
 	btnCancel.appendChild(document.createTextNode("取消"));
+	btnCancel.setAttribute("id", "__popup_cancel_btn");
+	btnCancel.style.display = "inline";
+	// btnCancel.onclick = closePopup();
 	container.appendChild(btnCancel);
 	var btnSubmit = document.createElement("BUTTON");
 	btnSubmit.appendChild(document.createTextNode("保存"));
+	btnSubmit.setAttribute("id", "__popup_submit_btn");
+	btnSubmit.style.display = "inline";
 	container.appendChild(btnSubmit);
+	// set style of container
+	container.style.border="4px solid green";
+	container.style.width = "300px";
+	container.style.height = "300px";
+	// container.style.float = "left";
+	// container.style.margin = "";
+	// container.style.zIndex = "50";
+	container.style.display = "none";
+	container.style.verticalAlign = "center";
+	container.style.position = "absolute";
+	container.style.top = "15%";
+	container.style.left = "45%";
+	container.style.background = "white";
+	container.style.zIndex = "1000";
+	container.style.opacity = "1";
+	document.body.appendChild(container);
+
+	var hideBack = document.createElement("div");
+	hideBack.setAttribute("id", "__popup_hide_background_id");
+	hideBack.style.display = "none";
+	hideBack.style.position = "fixed";
+	hideBack.style.top = 0;
+	hideBack.style.left = 0;
+	hideBack.style.width = "100%";
+	hideBack.style.height = "100%";
+	hideBack.style.opacity = "0.6";
+	hideBack.style.background = "black";
+	// hideBack.appendChild(container);
+	document.body.appendChild(hideBack);
+
+	// var parent = sibling.parentNode;
+	// parent.appendChild(container);
 }
 
-function addButtonClicked() {
-	console.log('inserted button clicked ');
+function showPopup() {
+	console.log('show pop up invoked');
+	var popup = document.getElementById("__popup_container_id");
+	var back = document.getElementById("__popup_hide_background_id");
+	if (!back || !popup || !passwordId || !usernameId){
+		console.log((back == null) + ' ' + (popup == null) + ' ' + (passwordId == null) + ' ' + (usernameId == null));
+		return;
+	}else {
+		back.style.display = "block";
+		popup.style.display = "block";
+		document.getElementById('__popup_new_username_id').value = document.getElementById(usernameId).value;
+		document.getElementById('__popup_new_password_id').value = document.getElementById(passwordId).value;
+		document.getElementById('__popup_account_name_id').value = document.title;
+	}
+}
+
+function closePopup() {
+	var popup = document.getElementById("__popup_container_id");
+	var back = document.getElementById("__popup_hide_background_id");
+	if (popup && back) {
+		document.getElementById('__popup_account_name_id').value = "";
+		document.getElementById('__popup_new_username_id').value = "";
+		document.getElementById('__popup_new_password_id').value = "";
+		popup.style.display = "none";
+		back.style.display = "none";
+	}
+	// document.getElementById("POPUP-CONTAINER").style.display = "none";
 }

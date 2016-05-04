@@ -23,5 +23,9 @@
 			"matches": ["http://*/*", "https://*/*", "ftp://*/*"],
 			"js": ["content_script.js"]
 		}
-	]
+	],
+
+	"web_accessible_resources": [
+		"icons/icon.png"
+	] 
 }
