@@ -4,13 +4,12 @@ console.log('background script running!');
 var grammar, vaultDist;
 var replacementJson = {
 	"3": "e",
-	"1": "l",
-	"2": "z",
+	"4": "a",
+	"1": "i",
 	"$": "s",
 	"0": "o",
 	"@": "a",
-	"8": "b",
-	"6": "b"
+	"z": "s"
 }
 var trie = new Trie(replacementJson);
 loadJSON('data/grammar.cfg', function(text){ 	
@@ -18,7 +17,7 @@ loadJSON('data/grammar.cfg', function(text){
 	console.log('grammar done');
 	initialize();
 	// test
-	console.log(trie.getSimilarKey("h3llow0rld"));
+	// parse("alaama777$rte_");
 });
 loadJSON('data/vault_dist.cfg', function(text) { 	
 	vaultDist = JSON.parse(text); 	
@@ -35,18 +34,147 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 	} 
 });
 
-function parseString(s) {
+function parse(s) {
+	var pi = new Array(s.length), rules;
+	for (var i = 0; i < pi.length; i++)
+		pi[i] = new Array(s.length);
+	for (var l = 0; l < s.length; l++) {
+		for (var i = 0; i < s.length - l; i++) {
+			var j = i + l;
+			var seg = s.substring(i, j+1);
+			// console.log("parse " + seg);
+			rules = getAllMatches(seg);
+			for (var k = i; k < j; k++) {
+				if (pi[i][k] && pi[k+1][j]){
+					// combine the two rules
+					var tmp = new Rule(pi[i][k].lhs + "," + pi[k+1][j].lhs, pi[i][k].rhs + "," + pi[k+1][j].rhs);
+					// tmp.extras.concat(pi[i][k].extras, pi[k+1][j].extras);
+					tmp.addExtraList(pi[i][k].extras);
+					tmp.addExtraList(pi[k+1][j].extras);
+					tmp.setProb(pi[i][k].getProb() * pi[k+1][j].getProb());
+					rules.push(tmp);
+				}
+			}
+			pi[i][j] = findBest(rules);
+		}
+	}
+	// build a parse tree base on the rules
+	var base = pi[0][s.length-1];
+	console.log("parse string " + s + " with rule: \n" + base.toString());
+	var pt = new Array();
+	var topRule = new Rule("G", base.lhs);
+	if (topRule.getProb() == 0.0){
+		// build a default catch all rules tree
+		for (var i = 0; i < s.length; i++){
+			if (s.charAt(i).match("[0-9]")){
+				pt.push(new Rule("G", "D1,G"));
+				pt.push(new Rule("D1", s.charAt(i)));
+			} else if (s.charAt(i).match("[a-zA-Z]")){
+				pt.push(new Rule("G", "W1,G"));
+				pt.push(new Rule("W1", s.charAt(i)));
+				pt.push(new Rule("L_" + s.charAt(i).toLowerCase(), s.charAt(i)));
+			} else if (s.charAt(i).match("[\!\#\$\&\*\.\;\@\_]")) {
+				pt.push(new Rule("G", "Y1,G"));
+				pt.push(new Rule("Y1", s.charAt(i)));
+			} else console.err("illegal character - " + s.charAt(i) + " - in string: " + s);
+		}
+		pt.push(new Rule("G", "|_|"));
+	}else { // build a leftmost parse tree
+		pt.push(topRule);
+		var lhsList = base.lhs.split(","),
+			rhsList = base.rhs.split(",");
+		for (var i = 0; i < lhsList.length; i++) {
+			var r = new Rule(lhsList[i], rhsList[i]);
+			pt.push(r);
+			if (r.lhs.charAt(0) == "W" || r.lhs == "T") {
+				for (var j = 0; j < r.rhs.length; j++){
+					pt.push(base.extras.shift());
+				}
+			}
+		}
+	}
+	console.log("parse tree of " + s + "\n" + pt.toString());
+	return pt;
+}
 
+function derive(rules) {
+	var str;
+	for (var i = 0; i < rules.length; i++) {
+
+	}
+}
+
+function getAllMatches(seg) {
+	var rules = new Array();
+	var r;
+	if (r = parseWord(seg))
+		rules.push(r);
+	if (r = parseDate(seg)) 
+		rules.push(r);
+	for (var lhs in grammar) {
+		if (lhs.charAt(0) != "T" && lhs.charAt(0) != "W" && lhs.charAt(0) != "L" && grammar[lhs][seg]) 
+			rules.push(new Rule(lhs, seg));
+	}
+	return rules;
+}
+
+function findBest(rules) {
+	// find the best according to probability
+	var bestRule = null, max = 0.0, p;
+	// console.log("all possible rules: ");
+	for (var i = 0; i < rules.length; i++) {
+		if ((p = rules[i].getProb()) && p > max) {
+			bestRule = rules[i];
+			max = p;
+		}
+		// console.log(rules[i].toString());
+	}
+	// console.log("best rule : " + bestRule);
+	return bestRule;	
 }
 
 function parseWord(s) {
 	var word = trie.getSimilarKey(s.toLowerCase());
 	if (word) {
 		var rule = new Rule(getWordGroup(word), word);
-
+		for (var i = 0; i < word.length; i++) 
+			rule.addExtra(new Rule("L_" + word.charAt(i), s.charAt(i)));
 		return rule;
 	}
 	return null;
+}
+
+function parseDate(s) {
+	var Y = '(19[0-9][0-9]|20[0-9][0-9])',
+		y = '([0-9][0-9])',
+    	m = '(0[0-9]|1[0-2])',
+    	d = '([0-2][0-9]|3[01])';
+    var pattern = {
+    	"ymd" : `${y+m+d}`,
+    	"Ymd" : `${Y+m+d}`,
+		"mdy" : `${m+d+y}`,
+		"mdY" : `${m+d+Y}`,
+		"dmy" : `${d+m+y}`,
+		"dmY" : `${d+m+Y}`,
+		"md"  : `${m+d}`,
+		"y"   : `${y}`,
+		"Y"   : `${Y}`
+    }
+	var re;
+    for (var pp in pattern) {
+    	if ((re = s.match(pattern[pp])) && re[0] == s){
+    		return buildRule(pp);
+    	}
+    }
+    return null;
+	function buildRule(rhs) {
+		if (re == null || re == undefined)
+			return null;
+		var rule = new Rule("T", rhs);
+		for (var i = 0 ; i < rhs.length; i++) 
+			rule.addExtra(new Rule("T_" + rhs.charAt(i), re[i+1]));
+		return rule;
+	}
 }
 
 function getWordGroup(word) {
@@ -77,6 +205,12 @@ function initialize() {
 		}
 		grammar[key]._total = total;
 	}
+	// modify the G rules to compact default catch all rules
+	grammar["G"]["W1,G"] = 0.25;
+	grammar["G"]["D1,G"] = 0.25;
+	grammar["G"]["Y1,G"] = 0.25;
+	grammar["G"]["|_|"] = 0.25;
+	grammar["G"]._total += 1;
 }
 
 function loadJSON(path, callback) {
@@ -96,12 +230,7 @@ function Trie(replacementJson) {
 	this.root = new Node('#', (new Array()));
 	this.replacements = replacementJson;
 	this._getReplace = function(char) {
-		for (var key in this.replacements){
-			if (key == char){
-				return this.replacements[key];
-			}
-		}
-		return null;
+		return this.replacements[char];
 	}
 	this.getSimilarKey = function(s) {
 		var chars = s.split("");
@@ -109,19 +238,16 @@ function Trie(replacementJson) {
 		var similarKey = "";
 		for (var i = 0; i < chars.length; i++) {
 			var child = tmp.findChild(chars[i]);
-			var replace = this._getReplace(chars[i]);
-			if (replace){
-				var repchild = tmp.findChild(replace);
-			}
-			if (!child && !repchild) {
-				return null;
-			} else {
-				tmp = child ? child : repchild;
-				similarKey.concat((child ? chars[i] : replace));
-			}
+			var repchild, replace;
+			if (child) {
+				tmp = child;
+				similarKey += chars[i];
+			} else if ((replace = this._getReplace(chars[i])) && (repchild = tmp.findChild(replace))){
+				tmp = repchild;
+				similarKey += replace;
+			} else return null;
 		}
-		var end = tmp.findChild('$');
-		if (!end) {
+		if (!tmp.findChild('$')) {
 			return null;
 		} else {
 			return similarKey;
@@ -167,16 +293,66 @@ function Trie(replacementJson) {
 function Rule(lhs, rhs) {
 	this.lhs = lhs;
 	this.rhs = rhs;
-	this.prob = 0.0;
 	this.extras = new Array();
 	this.getProb = function() {
+		if (this.type && this.type == "composite_rule"){
+			return this.prob;
+		}
 		var freq = grammar[lhs][rhs];
-		console.log("get freq: " + freq);
 		if (!freq) {
-			return 0.0;
+			this.prob = 0.0;
+			return this.prob;
+		} else if (this.lhs == "T") {
+			var p  = freq / grammar[lhs]._total;
+			this.prob = p;
+			for (var i = 0; i < this.extras.length; i++) {
+				p *= this.extras[i].getProb();
+			}
+			return p;
 		} else {
 			this.prob =  freq / grammar[lhs]._total;
 			return this.prob;
 		}
+	}
+	this.setProb = function(p){
+		this.prob = p;
+		this.type = "composite_rule";
+	}
+	this.addExtra = function(rule) {
+		if (rule)
+			this.extras.push(rule);
+	}
+	this.addExtraList = function(extras) {
+		if (!extras) return;
+		for (var i = 0; i < extras.length; i++){
+			this.extras.push(extras[i]);
+		}
+	}
+	this.toString = function() {
+		var s = this.lhs + " -> " + this.rhs + " : " + this.prob + "\n";
+		for (var i = 0; i < this.extras.length; i++) {
+			s += "\t" + this.extras[i].toString();
+		}
+		return s;
+	}
+	this.getFreq = function() {
+		return grammar[lhs][rhs];
+	}
+}
+
+encodeProb(0, 0);
+
+function encodeProb(p, q) {
+	// 128-bits secure random value
+	var buffer = new ArrayBuffer(16);
+	// var view = new Uint32Array(buffer);
+	var x = new Number(0);
+	// var arr = new Uint32Array(4);
+	var arr = new Uint32Array(buffer);
+	window.crypto.getRandomValues(arr);
+	for (var i = 0; i < arr.length; i++) {
+		console.log(arr[i].toString(16));
+		// x = x + (arr[i] * Math.pow(2, 32 * i));
+		// console.log("x: " + x.toString(16));
 	}
 }
