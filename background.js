@@ -340,19 +340,67 @@ function Rule(lhs, rhs) {
 	}
 }
 
-encodeProb(0, 0);
+var arr = encodeProb(17,29039);
+decodeProb(arr, 29039);
 
 function encodeProb(p, q) {
 	// 128-bits secure random value
-	var buffer = new ArrayBuffer(16);
-	// var view = new Uint32Array(buffer);
-	var x = new Number(0);
-	// var arr = new Uint32Array(4);
-	var arr = new Uint32Array(buffer);
+	// compute x + p - (x mod q)
+	// x = arr[3] * 2^96 + arr[2] * 2^64 + arr[1] * 2^32 + arr[0]
+	// get random x by get random arr
+	var arr = new Uint32Array(4);
 	window.crypto.getRandomValues(arr);
+	// compute x mod q
+	var ut = Math.pow(2, 32) % q;
+	console.log("ut: " + ut);
+	var sum = 0;
 	for (var i = 0; i < arr.length; i++) {
-		console.log(arr[i].toString(16));
-		// x = x + (arr[i] * Math.pow(2, 32 * i));
-		// console.log("x: " + x.toString(16));
+		sum += ((arr[i] % q) * (Math.pow(ut, i) % q)) % q;
 	}
+	var xmodq = sum % q;
+	console.log("x mod q: " + xmodq);
+	// t = p - (x mod q) compute x + t
+	var t = p - xmodq;
+	console.log("t: " + t);
+	console.log(arr.toString(16));
+	if (t < 0 && arr[0] < -t){
+		arr[0] = arr[0] + Math.pow(2, 32) + t;
+		arr[1] -= 1;
+	} else if (t < 0) {
+		arr[0] += t;
+	} else {
+		if (arr[0] > arr[0] + t){
+			if (arr[1] > arr[1] + 1){
+				if (arr[2] > arr[2] + 1){
+					if (arr[3] > arr[3] + 1){
+						t -= q;
+						if (t < 0 && arr[0] < -t){
+							arr[0] = arr[0] + Math.pow(2, 32) + t;
+							arr[1] -= 1;
+						} else arr[0] += t;
+					} else {
+						arr[3] += 1;
+						arr[2] += 1;
+						arr[1] += 1;
+						arr[0] += t;
+					}
+				} else arr[2] += 1;
+			} else arr[1] += 1;
+		} else arr[0] += t;
+	}
+	console.log(arr.toString(16));
+	// now arr represents the final result
+	return arr;
+}
+
+function decodeProb(arr, q) {
+	// p = r mod q
+	var sum = 0;
+	var ut = Math.pow(2, 32) % q;
+	for (var i = 0; i < arr.length; i++) {
+		sum += ((arr[i] % q) * (Math.pow(ut, i) % q)) % q;
+	}
+	var p = sum % q;
+	console.log("decode result: " + p);
+	return p;
 }
