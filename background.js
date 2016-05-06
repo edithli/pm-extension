@@ -21,14 +21,26 @@ loadJSON('data/grammar.cfg', function(text){
 	// test
 	// var pt = parse("alaama777$rte_");
 	// derive(pt);
-	var arr = encodePwd("8802667aafb");
-	decodePwd(arr);
+	// var arr = encodePwd("8802667aafb");
+	// decodePwd(arr);
+	// var test = new Uint32Array(ARR_LEN * MAX_PT_LEN);
+	// window.crypto.getRandomValues(test);
+	// decodePwd(test);
 });
 loadJSON('data/vault_dist.cfg', function(text) {
 	vaultDist = JSON.parse(text); 	
-	
+	// handle vaultDist
+	for (var key in vaultDist){
+		var total = 0;
+		for (var n in vaultDist[key]){
+			total += vaultDist[key][n];
+		}
+		vaultDist[key]._total = total;
+	}
+	console.log('vault dist done');
 });
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
+	console.log("enter listener");
 	if (sender.tab) {
 		var url = sender.tab.url;
 		var a = request.aValue;
@@ -50,6 +62,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
  *            			Constants 
  *===================================================*/
  var MAX_PT_LEN = 50; // max number of rules in a parse tree
+ var MAX_SG_LEN = 50;
  var ARR_LEN = 4; // the number of elements in an encoding of Uint32Array
 
 /*===================================================
@@ -82,23 +95,13 @@ function decodePwd(arr){
  		var codeArr = new Uint32Array(ARR_LEN);
  		for (var i = 0; i < ARR_LEN; i++, index++)
  			codeArr[i] = arr[index];
- 		var p = decodeProb(codeArr, grammar[lhs]._total);
- 		var rhs; 
- 		// find corresponding rhs
- 		for (var key in grammar[lhs]){
- 			if (key == "_total")
-				continue;
- 			if (p < grammar[lhs][key]){
- 				rhs = key;
- 				break;
- 			} else p -= grammar[lhs][key];
- 		}
- 		var rule = new Rule(lhs, rhs);
+ 		var rule = decodeRule(codeArr, lhs);
+ 		var rhs = rule.rhs;
  		console.log("get rule: " + rule.toString());
 		pt.push(rule);
  		// get right hand side non-terminals
  		var nonTList = new Array();
- 		if (lhs == "G" && rhs.includes(",")) {
+ 		if (lhs == "G") {
 			nonTList = rhs.split(",");
 			nonTList.reverse();
 		} else if (lhs.charAt(0) == "W") {
@@ -113,6 +116,20 @@ function decodePwd(arr){
 		stack = stack.concat(nonTList);
  	}
  	return derive(pt);
+}
+
+function decodeRule(arr, lhs){
+	var p = decodeProb(arr, grammar[lhs]._total);
+	var rhs; 
+	for (var key in grammar[lhs]){
+		if (key == "_total")
+			continue;
+		if (p < grammar[lhs][key]){
+			rhs = key;
+			break;
+		} else p -= grammar[lhs][key];
+	}
+	return new Rule(lhs, rhs);
 }
 
 function parse(s) {
@@ -374,6 +391,13 @@ function decodeProb(arr, q) {
 	return p;
 }
 
+function contain(arr,e){
+	for (var i = 0; i < arr.length; i++)
+		if (arr[i] == e)
+			return true;
+	return false;
+}
+
 /*===================================================
  *            			Objects 
  *===================================================*/
@@ -507,6 +531,145 @@ function Rule(lhs, rhs) {
 	}
 }
 
-function HoneyVault(){
-	this.pwdList = new Array();
+function HoneyVault(checksome, pwdList){
+	this.pwdList = pwdList;
+	this.checksome = checksome;
+	this.encodeVault = function(){
+
+	}
 }
+
+function SubGrammar(rules) {
+	this.__subgrammar = {};
+	this._buildSubGrammar = function(rules){
+		if (!rules){
+			console.log("encode subgrammar without rules");
+			return;
+		}
+		for (var i = 0; i < rules; i++){
+			var lhs = rules[i].lhs,
+				rhs = rules[i].rhs;
+			if (lhs.startsWith("L"))
+				continue;
+			if (!this.__subgrammar[lhs]){
+				this.__subgrammar[lhs] = {};
+				this.__subgrammar[lhs]._count = 0;
+			}
+			if (!this.__subgrammar[lhs][rhs]){
+				this.__subgrammar[lhs][rhs] = 1;
+				this.__subgrammar[lhs][rhs]._count++;
+			}
+		}
+	}
+	this.encodeSubGrammar = function(){
+		_buildSubGrammar(rules);
+		// for (var i = 0; i < this.pwdList.length; i++){
+		// 	var pt = parse(this.pwdList[i]);
+		// 	for (var j = 0; j < pt.length; j++){
+		// 		if (pt[j].lhs.startsWith("L"))
+		// 			continue;
+		// 		if (!this.__subgrammar[pt[j].lhs]){
+		// 			this.__subgrammar[pt[j].lhs] = {};
+		// 			this.__subgrammar[pt[j].lhs]._count = 0;
+		// 		}
+		// 		if (!this.__subgrammar[pt[j].lhs][pt[j].rhs]){
+		// 			this.__subgrammar[pt[j].lhs][pt[j].rhs] = 1;
+		// 			this.__subgrammar[pt[j].lhs]._count++;
+		// 		}
+		// 	}
+		// }
+		console.log("subgrammar: \n" + this.__subgrammar.toString());
+		var sgarr = new Uint32Array(ARR_LEN * MAX_SG_LEN);
+		window.crypto.getRandomValues(sgarr);
+		var index = 0;
+		var stack = new Array(), done = new Array();
+		stack.push("G");
+		while (stack.length > 0 && index < sgarr.length){
+			var lhs = stack.pop();
+			done.push(lhs);
+			// encode rule size first
+			var size = this.__subgrammar[key]._count;
+			if (!vaultDist[key][size])
+				console.err("rule size exceed max length for " + key);
+			// get cumulative frequency
+			var cf;
+			for (var sn in vaultDist[key]){
+				if (size != parseInt(sn))
+					cf += vaultDist[key][sn];
+				else break;
+			}
+			var p = parseInt(""+(Math.random() * vaultDist[key][size])) + cf;
+			var arr = encodeProb(p, vaultDist[key]._total);
+			for (var i = 0; i < arr.length; i++, index++)
+				sgarr[index] = arr[i];
+			// encode each grammar with lhs and get the nonTList
+			var nonTList = new Array();
+			for (var rhs in this.__subgrammar[lhs]){
+				var r = new Rule(lhs, rhs);
+				arr = encodeProb(r.getCumulativeFreq(), grammar[lhs]._total);
+				for (var i = 0; i < arr.length; i++, index++)
+					sgarr[index] = arr[i];
+				// parse rhs and get the non terminals
+				if (lhs == "G") {
+					nonTList = nonTList.concat(rhs.split(","));
+				} else if (lhs == "T") {
+					for (var i = 0; i < rhs.length; i++)
+						nonTList.push("T_" + rhs.charAt(i));
+				}
+			}
+			for (var i = nonTList.length - 1; i >= 0; i--) {
+				if (!contain(done, nonTList[i]) && !contain(stack, nonTList[i]))
+					stack.push(nonTList[i]);
+			}
+		}
+		return sgarr;
+	}
+	this.decodeSubGrammar = function(sgarr){
+		var stack = new Array(), done = new Array();
+		var sgrules = new Array();
+		stack.push("G");
+		var index = 0;
+		while (stack.length > 0 && index < sgarr.length){
+			var lhs = stack.pop();
+			done.push(lhs);
+			// decode size
+			var tmparr = new Uint32Array();
+			for (var i = 0; i < ARR_LEN; i++, index++)
+				tmparr[i] = sgarr[index];
+			var p = decodeProb(tmparr, vaultDist[lhs]._total);
+			var size;
+			for (var sn in vaultDist[lhs]){
+				if (p < vaultDist[lhs][sn])
+					size = parseInt(sn);
+				else p -= vaultDist[lhs][sn];
+			}
+			// decode rules
+			var nonTList = new Array();
+			for (var i = 0; i < size; i++){
+				for (var j = 0; j < ARR_LEN; j++, index++)
+					tmparr[i] = sgarr[index];
+				var rule = decodeRule(tmparr, lhs);
+				console.log("decode get rule: " + rule.toString());
+				sgrules.push(rule);
+				// get nonTList
+				if (lhs == "G") {
+					nonTList = nonTList.concat(rule.rhs.split(","));
+				} else if (lhs == "T") {
+					for (var i = 0; i < rule.rhs.length; i++)
+						nonTList.push("T_" + rule.rhs.charAt(i));
+				}
+			}
+			for (var i = nonTList.length - 1; i >= 0; i--) {
+				if (!contain(done, nonTList[i]) && !contain(stack, nonTList[i]))
+					stack.push(nonTList[i]);
+			}
+		}
+		_buildSubGrammar(sgrules);
+	}
+
+}
+
+/*=======================================================================================
+ * Things to mention: 
+ *		the random function in cumulative frequency is Math.random() which is not secure
+ *=======================================================================================*/
