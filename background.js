@@ -1,4 +1,6 @@
-
+/*===================================================
+ *            		  Main Process 
+ *===================================================*/
 console.log('background script running!');
 // load grammar file
 var grammar, vaultDist;
@@ -12,14 +14,17 @@ var replacementJson = {
 	"z": "s"
 }
 var trie = new Trie(replacementJson);
-loadJSON('data/grammar.cfg', function(text){ 	
+loadJSON('data/grammar.cfg', function(text){
 	grammar = JSON.parse(text); 
 	console.log('grammar done');
 	initialize();
 	// test
-	// parse("alaama777$rte_");
+	// var pt = parse("alaama777$rte_");
+	// derive(pt);
+	var arr = encodePwd("8802667aafb");
+	decodePwd(arr);
 });
-loadJSON('data/vault_dist.cfg', function(text) { 	
+loadJSON('data/vault_dist.cfg', function(text) {
 	vaultDist = JSON.parse(text); 	
 	
 });
@@ -33,6 +38,82 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 		sendResponse({done: "done"});
 	} 
 });
+
+
+/*===================================================
+ *            			Tests 
+ *===================================================*/
+// var arr = encodeProb(17,29039);
+// decodeProb(arr, 29039);
+
+/*===================================================
+ *            			Constants 
+ *===================================================*/
+ var MAX_PT_LEN = 50; // max number of rules in a parse tree
+ var ARR_LEN = 4; // the number of elements in an encoding of Uint32Array
+
+/*===================================================
+ *            			Methods 
+ *===================================================*/
+function encodePwd(pwd){
+ 	var pt = parse(pwd);
+ 	if (pt.length > MAX_PT_LEN){
+ 		console.error("parse tree length overflow for : " + pwd + " with parse tree: \n" + pt.toString());
+ 		return;
+ 	}
+ 	var arr = new Uint32Array(ARR_LEN * MAX_PT_LEN);
+ 	window.crypto.getRandomValues(arr);
+ 	for (var i = 0; i < pt.length; i++){
+ 		var tmp = encodeProb(pt[i].getCumulativeFreq(), grammar[pt[i].lhs]._total);
+ 		for (var j = 0; j < ARR_LEN; j++)
+ 			arr[i * ARR_LEN + j] = tmp[j];
+ 	}
+ 	return arr;
+}
+
+function decodePwd(arr){
+ 	var index = 0;
+ 	var pt = new Array();
+ 	// start with G rule
+ 	var stack = new Array(), pt = new Array();
+ 	stack.push("G");
+ 	while (stack.length > 0 && index < arr.length){
+ 		var lhs = stack.pop();
+ 		var codeArr = new Uint32Array(ARR_LEN);
+ 		for (var i = 0; i < ARR_LEN; i++, index++)
+ 			codeArr[i] = arr[index];
+ 		var p = decodeProb(codeArr, grammar[lhs]._total);
+ 		var rhs; 
+ 		// find corresponding rhs
+ 		for (var key in grammar[lhs]){
+ 			if (key == "_total")
+				continue;
+ 			if (p < grammar[lhs][key]){
+ 				rhs = key;
+ 				break;
+ 			} else p -= grammar[lhs][key];
+ 		}
+ 		var rule = new Rule(lhs, rhs);
+ 		console.log("get rule: " + rule.toString());
+		pt.push(rule);
+ 		// get right hand side non-terminals
+ 		var nonTList = new Array();
+ 		if (lhs == "G" && rhs.includes(",")) {
+			nonTList = rhs.split(",");
+			nonTList.reverse();
+		} else if (lhs.charAt(0) == "W") {
+			for (var i = 0; i < rhs.length; i++)
+				nonTList.push("L_" + rhs.charAt(i));
+			nonTList.reverse();
+		} else if (lhs == "T") {
+			for (var i = 0; i < rhs.length; i++)
+				nonTList.push("T_" + rhs.charAt(i));
+			nonTList.reverse();
+		}
+		stack = stack.concat(nonTList);
+ 	}
+ 	return derive(pt);
+}
 
 function parse(s) {
 	var pi = new Array(s.length), rules;
@@ -97,11 +178,21 @@ function parse(s) {
 	return pt;
 }
 
-function derive(rules) {
-	var str;
-	for (var i = 0; i < rules.length; i++) {
-
+function derive(pt) {
+	var str = "";
+	for (var i = 0; i < pt.length; i++) {
+		if (pt[i].lhs.charAt(0).startsWith("L_")){
+			str += pt[i].rhs;
+		} else if (pt[i].lhs.startsWith("T_")){
+			str += pt[i].rhs;
+		} else if (pt[i].lhs == "G" || pt[i].lhs.startsWith("W") || pt[i].lhs == "T"){
+			continue;
+		} else {
+			str += pt[i].rhs;
+		}
 	}
+	console.log("derive get string: " + str);
+	return str;
 }
 
 function getAllMatches(seg) {
@@ -206,11 +297,11 @@ function initialize() {
 		grammar[key]._total = total;
 	}
 	// modify the G rules to compact default catch all rules
-	grammar["G"]["W1,G"] = 0.25;
-	grammar["G"]["D1,G"] = 0.25;
-	grammar["G"]["Y1,G"] = 0.25;
-	grammar["G"]["|_|"] = 0.25;
-	grammar["G"]._total += 1;
+	grammar["G"]["|_|"] = 1;
+	grammar["G"]["W1,G"] = 1;
+	grammar["G"]["D1,G"] = 1;
+	grammar["G"]["Y1,G"] = 1;
+	grammar["G"]._total += 4;
 }
 
 function loadJSON(path, callback) {
@@ -224,6 +315,69 @@ function loadJSON(path, callback) {
 	}
 	xobj.send(null);
 }
+
+function encodeProb(p, q) {
+	console.log("encode prob: p - " + p + " q - " + q);
+	// 128-bits secure random value
+	// compute x + p - (x mod q)
+	// x = arr[3] * 2^96 + arr[2] * 2^64 + arr[1] * 2^32 + arr[0]
+	// get random x by get random arr
+	var arr = new Uint32Array(ARR_LEN);
+	window.crypto.getRandomValues(arr);
+	// compute x mod q
+	var ut = Math.pow(2, 32) % q;
+	var sum = 0;
+	for (var i = 0; i < arr.length; i++) {
+		sum += ((arr[i] % q) * (Math.pow(ut, i) % q)) % q;
+	}
+	var xmodq = sum % q;
+	// t = p - (x mod q) compute x + t
+	var t = p - xmodq;
+	if (t < 0 && arr[0] < -t){
+		arr[0] = arr[0] + Math.pow(2, 32) + t;
+		arr[1] -= 1;
+	} else if (t < 0) {
+		arr[0] += t;
+	} else {
+		if (arr[0] > arr[0] + t){
+			if (arr[1] > arr[1] + 1){
+				if (arr[2] > arr[2] + 1){
+					if (arr[3] > arr[3] + 1){
+						t -= q;
+						if (t < 0 && arr[0] < -t){
+							arr[0] = arr[0] + Math.pow(2, 32) + t;
+							arr[1] -= 1;
+						} else arr[0] += t;
+					} else {
+						arr[3] += 1;
+						arr[2] += 1;
+						arr[1] += 1;
+						arr[0] += t;
+					}
+				} else arr[2] += 1;
+			} else arr[1] += 1;
+		} else arr[0] += t;
+	}
+	// now arr represents the final result
+	return arr;
+}
+
+function decodeProb(arr, q) {
+	// p = r mod q
+	var sum = 0;
+	var ut = Math.pow(2, 32) % q;
+	for (var i = 0; i < arr.length; i++) {
+		sum += ((arr[i] % q) * (Math.pow(ut, i) % q)) % q;
+	}
+	var p = sum % q;
+	console.log("decode result: " + p);
+	return p;
+}
+
+/*===================================================
+ *            			Objects 
+ *===================================================*/
+ 
 
 function Trie(replacementJson) {
 	// start with # and end with $
@@ -338,69 +492,21 @@ function Rule(lhs, rhs) {
 	this.getFreq = function() {
 		return grammar[lhs][rhs];
 	}
+	this.getCumulativeFreq = function(){
+		var cf = 0;
+		for (var key in grammar[lhs]){
+			if (key == "_total")
+				continue;
+			if (key != rhs){
+				cf += grammar[lhs][key];
+			}
+			else break;
+		}
+		var p = parseInt(""+(Math.random() * this.getFreq())) + cf;
+		return p;
+	}
 }
 
-var arr = encodeProb(17,29039);
-decodeProb(arr, 29039);
-
-function encodeProb(p, q) {
-	// 128-bits secure random value
-	// compute x + p - (x mod q)
-	// x = arr[3] * 2^96 + arr[2] * 2^64 + arr[1] * 2^32 + arr[0]
-	// get random x by get random arr
-	var arr = new Uint32Array(4);
-	window.crypto.getRandomValues(arr);
-	// compute x mod q
-	var ut = Math.pow(2, 32) % q;
-	console.log("ut: " + ut);
-	var sum = 0;
-	for (var i = 0; i < arr.length; i++) {
-		sum += ((arr[i] % q) * (Math.pow(ut, i) % q)) % q;
-	}
-	var xmodq = sum % q;
-	console.log("x mod q: " + xmodq);
-	// t = p - (x mod q) compute x + t
-	var t = p - xmodq;
-	console.log("t: " + t);
-	console.log(arr.toString(16));
-	if (t < 0 && arr[0] < -t){
-		arr[0] = arr[0] + Math.pow(2, 32) + t;
-		arr[1] -= 1;
-	} else if (t < 0) {
-		arr[0] += t;
-	} else {
-		if (arr[0] > arr[0] + t){
-			if (arr[1] > arr[1] + 1){
-				if (arr[2] > arr[2] + 1){
-					if (arr[3] > arr[3] + 1){
-						t -= q;
-						if (t < 0 && arr[0] < -t){
-							arr[0] = arr[0] + Math.pow(2, 32) + t;
-							arr[1] -= 1;
-						} else arr[0] += t;
-					} else {
-						arr[3] += 1;
-						arr[2] += 1;
-						arr[1] += 1;
-						arr[0] += t;
-					}
-				} else arr[2] += 1;
-			} else arr[1] += 1;
-		} else arr[0] += t;
-	}
-	console.log(arr.toString(16));
-	// now arr represents the final result
-	return arr;
-}
-
-function decodeProb(arr, q) {
-	// p = r mod q
-	var sum = 0;
-	var ut = Math.pow(2, 32) % q;
-	for (var i = 0; i < arr.length; i++) {
-		sum += ((arr[i] % q) * (Math.pow(ut, i) % q)) % q;
-	}
-	var p = sum % q;
-	console.log("decode result: " + p);
-	return p;
+function HoneyVault(){
+	this.pwdList = new Array();
 }
