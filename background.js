@@ -18,8 +18,6 @@ loadJSON('data/grammar.cfg', function(text){
 	grammar = JSON.parse(text); 
 	console.log('grammar done');
 	initialize();
-	// test
-	// var pt = parse("alaama777$rte_");
 	// derive(pt);
 	// var arr = encodePwd("8802667aafb");
 	// decodePwd(arr);
@@ -38,6 +36,12 @@ loadJSON('data/vault_dist.cfg', function(text) {
 		vaultDist[key]._total = total;
 	}
 	console.log('vault dist done');
+	// test
+	var pt = parse("alaama777$rte_");
+	var pt2 = parse("aslife323234$@");
+	var sg = new SubGrammar(pt.concat(pt2));
+	var arr = sg.encodeSubGrammar();
+	sg.decodeSubGrammar(arr);
 });
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 	console.log("enter listener");
@@ -560,9 +564,10 @@ function SubGrammar(rules) {
 				this.__subgrammar[lhs][rhs]._count++;
 			}
 		}
+		console.log("build subgrammar: \n" + this.__subgrammar.toString());
 	}
 	this.encodeSubGrammar = function(){
-		_buildSubGrammar(rules);
+		this._buildSubGrammar(rules);
 		// for (var i = 0; i < this.pwdList.length; i++){
 		// 	var pt = parse(this.pwdList[i]);
 		// 	for (var j = 0; j < pt.length; j++){
@@ -578,7 +583,6 @@ function SubGrammar(rules) {
 		// 		}
 		// 	}
 		// }
-		console.log("subgrammar: \n" + this.__subgrammar.toString());
 		var sgarr = new Uint32Array(ARR_LEN * MAX_SG_LEN);
 		window.crypto.getRandomValues(sgarr);
 		var index = 0;
@@ -588,18 +592,18 @@ function SubGrammar(rules) {
 			var lhs = stack.pop();
 			done.push(lhs);
 			// encode rule size first
-			var size = this.__subgrammar[key]._count;
-			if (!vaultDist[key][size])
-				console.err("rule size exceed max length for " + key);
+			var size = this.__subgrammar[lhs]._count;
+			if (!vaultDist[lhs][size])
+				console.err("rule size exceed max length for " + lhs);
 			// get cumulative frequency
 			var cf;
-			for (var sn in vaultDist[key]){
+			for (var sn in vaultDist[lhs]){
 				if (size != parseInt(sn))
-					cf += vaultDist[key][sn];
+					cf += vaultDist[lhs][sn];
 				else break;
 			}
-			var p = parseInt(""+(Math.random() * vaultDist[key][size])) + cf;
-			var arr = encodeProb(p, vaultDist[key]._total);
+			var p = parseInt(""+(Math.random() * vaultDist[lhs][size])) + cf;
+			var arr = encodeProb(p, vaultDist[lhs]._total);
 			for (var i = 0; i < arr.length; i++, index++)
 				sgarr[index] = arr[i];
 			// encode each grammar with lhs and get the nonTList
@@ -664,7 +668,7 @@ function SubGrammar(rules) {
 					stack.push(nonTList[i]);
 			}
 		}
-		_buildSubGrammar(sgrules);
+		this._buildSubGrammar(sgrules);
 	}
 
 }

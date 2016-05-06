@@ -21,13 +21,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			var ln = links[i];
 			var dst = ln.href;
 			ln.onclick = function(){
+				// need to check whether user has logged in
 				console.log('link clicked - jump to : ' + dst);
 				chrome.tabs.create({active: true, url: dst});
 			};
 		})();
 	}
-
-	
 });
 
 console.log('popup.js end');
