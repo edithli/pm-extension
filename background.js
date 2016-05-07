@@ -18,8 +18,13 @@ loadJSON('data/grammar.cfg', function(text){
 	grammar = JSON.parse(text); 
 	console.log('grammar done');
 	initialize();
+	// console.log(CryptoJS.AES.encrypt("hello", "password"));
+	// test();
+	// var ctr = sjcl.mode.ctr;
+	// console.log(!ctr);
 	// derive(pt);
-	// var arr = encodePwd("8802667aafb");
+	var arr = encodePwd("8802667aafb");
+	decodePwd(decrypt("pwd123", encrypt("pwd", arr)));
 	// decodePwd(arr);
 	// var test = new Uint32Array(ARR_LEN * MAX_PT_LEN);
 	// window.crypto.getRandomValues(test);
@@ -36,12 +41,13 @@ loadJSON('data/vault_dist.cfg', function(text) {
 		vaultDist[key]._total = total;
 	}
 	console.log('vault dist done');
-	// test
-	var pt = parse("alaama777$rte_");
-	var pt2 = parse("aslife323234$@");
-	var sg = new SubGrammar(pt.concat(pt2));
-	var arr = sg.encodeSubGrammar();
-	sg.decodeSubGrammar(arr);
+	// @TODO!
+	// // test
+	// var pt = parse("alaama777$rte_");
+	// var pt2 = parse("aslife323234$@");
+	// var sg = new SubGrammar(pt.concat(pt2));
+	// var arr = sg.encodeSubGrammar();
+	// sg.decodeSubGrammar(arr);
 });
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 	console.log("enter listener");
@@ -55,23 +61,100 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 	} 
 });
 
-
-/*===================================================
- *            			Tests 
- *===================================================*/
-// var arr = encodeProb(17,29039);
-// decodeProb(arr, 29039);
-
 /*===================================================
  *            			Constants 
  *===================================================*/
  var MAX_PT_LEN = 50; // max number of rules in a parse tree
  var MAX_SG_LEN = 50;
  var ARR_LEN = 4; // the number of elements in an encoding of Uint32Array
+ var AES_ITER = 10000; // iteration count of aes encryption
+ var KEY_LEN = 256;
+ var SALT_WORD_LEN = 4; // 128-bit salt length
+ var IV_WORD_LEN = 4;
+ var SALT_BIT_LEN = 128;
+ var IV_BIT_LEN = 128;
 
 /*===================================================
  *            			Methods 
  *===================================================*/
+
+function test() {
+	var password = "password";
+	var plaintext = sjcl.codec.hex.toBits("23047ADBDEF23");
+	var count = 10000;
+	var length = 256;
+	var salt = sjcl.random.randomWords(4, 0);
+	console.log("salt: " + sjcl.codec.hex.fromBits(salt));
+	var iv = sjcl.random.randomWords(4, 0);
+	console.log("iv: " + sjcl.codec.hex.fromBits(iv));
+	var key = sjcl.misc.pbkdf2(password, salt, count, length);
+	console.log("key: " + sjcl.codec.hex.fromBits(key));
+	var aes = new sjcl.cipher.aes(key);
+	var enc = sjcl.mode.ctr.encrypt(aes, plaintext, iv);
+	console.log(sjcl.codec.hex.fromBits(enc));
+
+	var prf = new sjcl.cipher.aes(sjcl.misc.pbkdf2("wrongpwd", salt, count, length));
+	var dec = sjcl.mode.ctr.decrypt(prf, enc, iv);
+	console.log(sjcl.codec.hex.fromBits(dec));
+}
+
+// encrypt a Uint32Array
+function encrypt(password, arr){
+	console.log("encrypt");
+	var str = "";
+	for (var i = 0; i < arr.length; i++)
+		str += arr[i].toString(16);
+	console.log("plaintext: " + str);
+	// compute aes key
+	var salt = sjcl.random.randomWords(SALT_WORD_LEN, 0);
+	// console.log("salt: " + sjcl.codec.hex.fromBits(salt));
+	var key = sjcl.misc.pbkdf2(password, salt, AES_ITER, KEY_LEN);
+	console.log("key: " + sjcl.codec.hex.fromBits(key));
+	var plaintext = sjcl.codec.hex.toBits(str);
+	var aes = new sjcl.cipher.aes(key);
+	var iv = sjcl.random.randomWords(IV_WORD_LEN, 0);
+	// console.log("iv: " + sjcl.codec.hex.fromBits(iv));
+	var ctbits = sjcl.mode.ctr.encrypt(aes, plaintext, iv);
+	var ctstr = sjcl.codec.base64.fromBits(ctbits);
+	console.log("ciphertext: " + ctstr);
+	// append the salt and iv into the ciphertext
+	var ct = sjcl.bitArray.concat(salt, iv);
+	ct = sjcl.bitArray.concat(ct, ctbits);
+	// console.log("final ct: " + sjcl.codec.hex.fromBits(ct));
+
+	// var ct = sjcl.encrypt(password, str, {iter:10000, ks:256, adata:ADATA});
+	// return ct.match(/"ct":"([^"]*)"/)[1];
+	return ct;
+}
+
+function decrypt(password, ct){
+	// var rp = {};
+	// var pt = sjcl.decrypt(password, ct, {}, rp);
+	// var adata = sjcl.codec.utf8String.fromBits(rp.adata);
+	// if (adata != ADATA)
+	// 	throw new sjcl.exception.invalid("adata not correct!!");
+	console.log("decrypt");
+	var salt = sjcl.bitArray.bitSlice(ct, 0, SALT_BIT_LEN);
+	var iv = sjcl.bitArray.bitSlice(ct, SALT_BIT_LEN, SALT_BIT_LEN + IV_BIT_LEN);
+	var ciphertext = sjcl.bitArray.bitSlice(ct, SALT_BIT_LEN + IV_BIT_LEN);
+	// console.log("salt: " + sjcl.codec.hex.fromBits(salt));
+	// console.log("iv: " + sjcl.codec.hex.fromBits(iv));
+	// console.log("ciphertext: " + sjcl.codec.base64.fromBits(ciphertext));
+	var key = sjcl.misc.pbkdf2(password, salt, AES_ITER, KEY_LEN);
+	console.log("key: " + sjcl.codec.hex.fromBits(key));
+	var aes = new sjcl.cipher.aes(key);
+	var ptbits = sjcl.mode.ctr.decrypt(aes, ciphertext, iv);
+	var pt = sjcl.codec.hex.fromBits(ptbits);
+	console.log("plaintext: " + pt);
+
+	// split the string into arr
+	var arr = new Array(MAX_PT_LEN * ARR_LEN); 
+	for (var i = 0; i < arr.length; i++){
+		arr[i] = parseInt(pt.substring(8 * i, 8 * (i + 1)), 16);
+	}
+	return arr;
+}
+
 function encodePwd(pwd){
  	var pt = parse(pwd);
  	if (pt.length > MAX_PT_LEN){
