@@ -1,6 +1,18 @@
 /*===================================================
  *            		  Main Process 
  *===================================================*/
+
+// with symmetric key: (neccessarity to be considered!)
+// 1. exchange symmetric key with server with AJAX request
+//		if no network yet, wait until user enter login 
+//		upon receiving login request, exchange key with server
+// 2. only with the key can the login info be parsed
+
+// lifecycle -- session & mpw should be cleaned after browser exit
+
+// without key:
+// login page send mpw for background to initialize
+
 console.log('background script running!');
 // load grammar file
 var grammar, vaultDist;
@@ -20,10 +32,16 @@ loadJSON('data/grammar.cfg', function(text){
 	initialize();
 	// console.log(CryptoJS.AES.encrypt("hello", "password"));
 	// test();
+
+	// var ct = encryptPwd("mpw", "helloworld");
+	// console.log("encryptPwd: " + ct);
+	// var pt = decryptPwd("mpw", ct);
+	// console.log("decryptPwd: " + pt);
+
 	// var ctr = sjcl.mode.ctr;
 	// console.log(!ctr);
 	// derive(pt);
-	// var arr = encodePwd("8802667aafb");
+	// var arr = encodePwd("helloworld"); //@TODO: debug !!!!!!!!!!!!!!!!!!!!!!!!!!! for "checksum"
 	// var pt = encrypt("pwd", arr);
 	// decodePwd(decrypt("pwd", pt));
 	// decodePwd(decrypt("pwd123", pt));
@@ -53,17 +71,110 @@ loadJSON('data/vault_dist.cfg', function(text) {
 	// var arr = sg.encodeSubGrammar();
 	// sg.decodeSubGrammar(arr);
 });
+
+function closeCurrentTab(){
+	chrome.tabs.query({active:true, currentWindow: true, url: LOGIN_URL, title: "Welcome Login"}, 
+		function(tabs){
+			chrome.tabs.remove(tabs[0].id);
+	});
+}
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
-	console.log("enter listener");
+	// console.log("enter listener");
 	if (sender.tab) {
 		var url = sender.tab.url;
-		var a = request.aValue;
-		var u = request.uValue;
-		var p = request.pValue;
-		console.log(url + ": " + a + " " + u + " " + p);
-		sendResponse({done: "done"});
+		if (url == LOGIN_URL){
+			if (request.checkURL){
+				// console.log("request from login page: " + url);
+				sendResponse({login: true});
+			}else if (request.login){
+				console.log("request from login page: " + url);
+				username = request.username;
+				mpw = request.mpwValue;
+				checksum = request.cipherChecksum;//@TODO!!!!!!!!
+				console.log("bk: got login info: " + username + " " + mpw + " " + checksum);
+				if (request.closeTab){
+					closeCurrentTab();
+				}
+			}
+		} else if (url == REGISTER_URL){
+			if (request.checkURL){
+				console.log("request from register page: " + url);
+				sendResponse({register: true});
+			}else if (request.register) {
+				console.log("request to initialize from " + url);
+				username = request.username;
+				mpw = request.mpwValue;
+				checksum = request.checksum;
+				console.log("bk: get register info: " + username + " " + mpw + " " + checksum);
+				// encrypt checksum for server to store
+				// var cipherChecksum = sjcl.codec.hex.fromBits(encrypt(mpw, encodePwd())) @TODO
+				var cipherChecksum = checksum;
+				sendResponse({cipherChecksum: cipherChecksum});
+			}
+		} else if (request.checkURL){
+			// check login first !!!!!!!!!!
+
+			// check for auto-completion
+			var xhr = new XMLHttpRequest();
+			xhr.onreadystatechange = function(){
+				if (xhr.readyState == 4 && xhr.status == 200){
+					var resp = JSON.parse(xhr.responseText);
+					if (resp.hasEntry){
+						console.log("user has entry in " + url);
+						console.log('entry info: ' + xhr.responseText);
+						var ctpwd = resp.password; // @TODO !!!!!!!!!!!!!!!!
+
+						sendResponse({autofill: true, nickname: resp.nickname, password: ctpwd});
+					}else sendResponse({normalPage: true});
+				}
+			}
+			xhr.open("POST", URL_QUERY_URL);
+			xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+			xhr.send(JSON.stringify({
+				username: username,
+				url: url
+			}));
+
+			// sendResponse({normalPage: true});
+		} else if (request.checkLogin){
+			if (!mpw)
+				sendResponse({loginState: false});
+			else sendResponse({loginState: true});
+		} else if (request.openLogin){
+			chrome.tabs.create({url:LOGIN_URL});
+		} else  if (request.addEntry){
+			if (!mpw){
+				sendResponse({error: "no_mpw"});
+			}else{
+				var a = request.aValue;
+				var u = request.uValue;
+				var p = request.pValue;
+				console.log("receive from normal page: " + url + ": " + a + " " + u + " " + p);
+				sendResponse({done: "done"});
+				// send encrypted data back to server
+				var xhr = new XMLHttpRequest();
+				xhr.onreadystatechange = function(){
+					if (xhr.readyState == 4 && xhr.status == 200){
+						if (xhr.responseText.match("done"))
+							console.log("entry stored!");
+						else console.error("something wrong with entry store! \n\t" + xhr.responseText);
+					}
+				}
+				xhr.open("POST", DATA_SERVER_URL);
+				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+				xhr.send(JSON.stringify({
+					username: username,
+					domain:url, 
+					ac_name:a,
+					nickname:u,
+					ctpwd:p    //@TODO!!!!!!!!!!!!!!!!!!
+				}));
+			}
+		}else console.log("unexpected request: \n" + request);
 	} 
 });
+
+var mpw, username, checksum;
 
 /*===================================================
  *            			Constants 
@@ -78,9 +189,18 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
  var SALT_BIT_LEN = 128;
  var IV_BIT_LEN = 128;
 
+var LOGIN_URL = "http://localhost:8080/pm-server/login.html";
+var REGISTER_URL = "http://localhost:8080/pm-server/register.html";
+var DATA_SERVER_URL = "http://localhost:8080/pm-server/AddUserServlet";
+var URL_QUERY_URL = "http://localhost:8080/pm-server/QueryURLServlet";
+
 /*===================================================
  *            			Methods 
  *===================================================*/
+
+function login() {
+
+}
 
 function test() {
 	var password = "password";
@@ -102,7 +222,19 @@ function test() {
 	console.log(sjcl.codec.hex.fromBits(dec));
 }
 
+function encryptPwd(mpw, plaintext){ // @TODO: debug!!!!!!!!!!!!!!!!
+	var arr = encodePwd(plaintext);
+	var ctbits = encrypt(mpw, arr);
+	return sjcl.codec.base32.fromBits(ctbits);
+}
+
+function decryptPwd(mpw, ciphertext){
+	var arr = decrypt(mpw, sjcl.codec.base32.toBits(ciphertext));
+	return decodePwd(arr);
+}
+
 // encrypt a Uint32Array
+// return a bitArray
 function encrypt(password, arr){
 	console.log("encrypt");
 	var str = "";

@@ -11,7 +11,9 @@
 	},
 
 	"permissions": [
-	    "activeTab"
+	    "activeTab",
+	    "tabs",
+	    "http://localhost:8080/pm-server/"
 	],
 
 	"background": {

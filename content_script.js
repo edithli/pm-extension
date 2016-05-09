@@ -1,33 +1,108 @@
 // document.body.style.border = "5px solid black";
 console.log('content script running!');
 
-// the list of all documents
-var docs = new Array();
-docs.push(document);
-// in case of iFrame
-// @TODO: problem remains for HTML iframe element because of same origin policy
-var iFrames = document.getElementsByTagName('iframe');
-for (var i = iFrames.length - 1; i >= 0; i--) {
-	var doc1 = iFrames[i].contentDocument;
-	if (doc1 != null && doc1 != undefined){
-		docs.push(doc1);
-	}else {
-		var doc2 = iFrames[i].contentWindow.document;
-		if (doc2 != null || doc2 != undefined){
-			docs.push(doc2);
-		}else {
-			console.log('unresolved document in iframe id: ' + iFrames[i].id);
+// Constants
+var LOGIN_URL = "http://localhost:8080/pm-server/login.html";
+var REGISTER_URL = "http://localhost:8080/pm-server/register.html";
+
+var passwordId, usernameId;
+
+if (!chrome.runtime) chrome.runtime = chrome.extension;
+
+//check url - autofill
+chrome.runtime.sendMessage({checkURL: true}, function(response){
+	if (response.login){
+		document.getElementById("submit").onclick = function(){
+			var usernameInput = document.getElementById("username-input");
+		    var cks = document.getElementById("cipher-checksum");
+		    var xmlhttp = new XMLHttpRequest();
+		    xmlhttp.onreadystatechange = function(){
+		        if (xmlhttp.readyState == 4 && xmlhttp.status == 200){
+		            if (xmlhttp.responseText == "invalid"){
+		                usernameInput.style.border = "red";
+		                usernameInput.value = "invalid username";
+		                console.log("response invalid");
+		            }else{
+		                // usernameInput.style.border = "green";
+		                // cks.value = xmlhttp.responseText;
+		                // console.log("checksum: " + cks.value);
+		                var username = document.getElementById("username-input").value;
+						var mpw = document.getElementById("mpw-input").value;
+						var checksum = xmlhttp.responseText;
+						console.log("read login form: " + username + " " + mpw + " " + checksum);
+						chrome.runtime.sendMessage({
+							login: true, username:username, mpwValue: mpw, 
+							cipherChecksum: checksum, closeTab: true
+						});
+		            }
+		        }
+		    }
+		    xmlhttp.open("GET", "/pm-server/LoginServlet?username=" + usernameInput.value);
+		    xmlhttp.send();
 		}
+		// document.getElementById("cipher-checksum").addEventListener('blur', function(){
+		// 	console.log("login form submitted!");
+		// 	var username = document.getElementById("username-input").value;
+		// 	var mpw = document.getElementById("mpw-input").value;
+		// 	var checksum = document.getElementById("cipher-checksum").value;
+		// 	console.log("read login form: " + username + " " + mpw + " " + checksum);
+		// 	chrome.runtime.sendMessage({
+		// 		login: true, username:username, mpwValue: mpw, cipherChecksum: checksum});
+		// });
+		document.getElementById("login-form").addEventListener('submit', function(){
+			console.log("login form submitted!");
+			var username = document.getElementById("username-input").value;
+			var mpw = document.getElementById("mpw-input").value;
+			var checksum = document.getElementById("cipher-checksum").value;
+			console.log("read login form: " + username + " " + mpw + " " + checksum);
+			chrome.runtime.sendMessage({
+				login: true, username:username, mpwValue: mpw, cipherChecksum: checksum});
+		});
+	}else if (response.register){
+		// retrieve mpw and checksum
+		console.log("enter register page");
+		// form checking required @TODO
+		document.getElementById("register-submit").addEventListener('click', function(){
+			var username = document.getElementById("username-input").value;
+			var mpw = document.getElementById("password-input").value;
+			var checksum = document.getElementById("checksum-input").value;
+			console.log("CS:read in register form : " + username + " " + mpw + " " + checksum);
+			// send mpw and checksum to background for initialization
+			chrome.runtime.sendMessage({
+				register: true, username: username, mpwValue: mpw, checksum: checksum}, 
+				function(response){
+					console.log("CS register receive cipher checksum: " + response.cipherChecksum);
+					document.getElementById("cipher-checksum").value = response.cipherChecksum;
+					document.getElementById("register-form").submit();
+			});
+		});
+	} else if (response.autofill){
+		detectLoginForm();
+		if (passwordId && usernameId){
+			document.getElementById(usernameId).value = response.nickname;
+			document.getElementById(passwordId).value = response.password;
+			addPopup();
+			dialogOpenerHandler();
+		} else {
+			console.error("There should be a complete login form");
+		}
+	} else {
+		// normalPage();
+		handleNormalPage();
+	}
+});
+
+function handleNormalPage(){
+	addPopup();
+	detectLoginForm();
+	if (passwordId || usernameId){
+		dialogOpenerHandler();
 	}
 }
-console.log('the number of documents: ' + docs.length);
 
-// add a popup div to body
-addPopup();
-var usernameId, passwordId;
-var hasPassword = false;
-for (var i = docs.length - 1; i >= 0; i--) {
-	var inputs = docs[i].getElementsByTagName('INPUT');
+function detectLoginForm(){
+	var hasPassword = false;
+	var inputs = document.getElementsByTagName('INPUT');
 	for (var i = inputs.length - 1; i >= 0; i--) {
 		var input = inputs[i];
 		// add buttons to account id and password input elements
@@ -47,46 +122,170 @@ for (var i = docs.length - 1; i >= 0; i--) {
 		} 
 	}
 }
-// add event listener
-document.addEventListener('click', function(e){
-	// console.log(e.target.name + ' was clicked');
-	if (e.target.name == 'popupOpenerDiv' || e.target.name == 'popupOpenerImg'){
-		showPopup();
-	} else if (e.target.id == '__popup_cancel_btn') {
-		closePopup();
-	} else if (e.target.id == '__popup_submit_btn') {
-		console.log('save button clicked');
-		var name = document.getElementById('__popup_account_name_id');
-		var u = document.getElementById('__popup_new_username_id');
-		var p = document.getElementById('__popup_new_password_id');
-		if (!name || !u || !p){
-			console.log('element in popup not found');
-			return;
+
+function dialogOpenerHandler(){
+	document.addEventListener('click', function(e){
+		if (e.target.name == 'popupOpenerDiv' || e.target.name == 'popupOpenerImg'){
+			chrome.runtime.sendMessage({checkLogin: true}, function(response){
+				if (response.loginState == true){
+					console.log("logged in!");
+					popupClickHandler(e);
+				} else if (response.loginState == false){
+					console.log("not log in yet");
+					chrome.runtime.sendMessage({openLogin: true});
+				} else console.error("unexpected response in checkLogin");
+			});
+		}else popupClickHandler(e);
+	});
+
+	function popupClickHandler(e){
+		// console.log(e.target.name + ' was clicked');
+		if (e.target.name == 'popupOpenerDiv' || e.target.name == 'popupOpenerImg'){
+			showPopup();
+		} else if (e.target.id == '__popup_cancel_btn') {
+			closePopup();
+		} else if (e.target.id == '__popup_submit_btn') {
+			console.log('save button clicked');
+			var name = document.getElementById('__popup_account_name_id');
+			var u = document.getElementById('__popup_new_username_id');
+			var p = document.getElementById('__popup_new_password_id');
+			if (!name || !u || !p){
+				console.log('element in popup not found');
+				return;
+			}
+			function hintNoInput(e) {
+				e.style.border = "2px solid red";
+			}
+			if (name.value == "") {
+				hintNoInput(name);
+				return;
+			} else if (u.value == "") {
+				hintNoInput(u);
+				return;
+			} else if (p.value == "") {
+				hintNoInput(p);
+				return;
+			}
+			var msg = {
+				addEntry: true,
+				aValue: name.value,
+				uValue: u.value,
+				pValue: p.value
+			}
+			chrome.runtime.sendMessage(msg, function(response){
+				console.log(response.done);
+			});
+			closePopup();
 		}
-		function hintNoInput(e) {
-			e.style.border = "2px solid red";
-		}
-		if (name.value == "") {
-			hintNoInput(name);
-			return;
-		} else if (u.value == "") {
-			hintNoInput(u);
-			return;
-		} else if (p.value == "") {
-			hintNoInput(p);
-			return;
-		}
-		var msg = {
-			aValue: name.value,
-			uValue: u.value,
-			pValue: p.value
-		}
-		chrome.runtime.sendMessage(msg, function(response){
-			console.log(response.done);
-		});
-		closePopup();
 	}
-});
+}
+
+function normalPage(){
+	// the list of all documents
+	var docs = new Array();
+	docs.push(document);
+	// in case of iFrame
+	// @TODO: problem remains for HTML iframe element because of same origin policy
+	var iFrames = document.getElementsByTagName('iframe');
+	for (var i = iFrames.length - 1; i >= 0; i--) {
+		var doc1 = iFrames[i].contentDocument;
+		if (doc1 != null && doc1 != undefined){
+			docs.push(doc1);
+		}else {
+			var doc2 = iFrames[i].contentWindow.document;
+			if (doc2 != null || doc2 != undefined){
+				docs.push(doc2);
+			}else {
+				console.log('unresolved document in iframe id: ' + iFrames[i].id);
+			}
+		}
+	}
+	console.log('the number of documents: ' + docs.length);
+
+	// add a popup div to body
+	addPopup();
+	var usernameId, passwordId;
+	var hasPassword = false;
+	for (var i = docs.length - 1; i >= 0; i--) {
+		var inputs = docs[i].getElementsByTagName('INPUT');
+		for (var i = inputs.length - 1; i >= 0; i--) {
+			var input = inputs[i];
+			// add buttons to account id and password input elements
+			if ( (input.type == 'password' || input.name == 'password') && input.id != '__popup_new_password_id' ){
+				input.style.border = "3px solid red";
+				// addButton(input);
+				hasPassword = true;
+				passwordId = input.id;
+				console.log('find password id: ' + passwordId);
+				addPopupOpener(input);
+			} else if ( (input.type == 'text' || input.type == 'email') && input.id != '__popup_new_username_id'  && hasPassword) {
+				input.style.border = "3px solid yellow";
+				hasPassword = false;
+				usernameId = input.id;
+				console.log('find username id: ' + usernameId);
+				addPopupOpener(input);
+			} 
+		}
+	}
+
+	// add event listener
+	document.addEventListener('click', function(e){
+		if (e.target.name == 'popupOpenerDiv' || e.target.name == 'popupOpenerImg'){
+			chrome.runtime.sendMessage({checkLogin: true}, function(response){
+				if (response.loginState == true){
+					console.log("logged in!");
+					popupClickHandler(e);
+				} else if (response.loginState == false){
+					console.log("not log in yet");
+					chrome.runtime.sendMessage({openLogin: true});
+				} else console.error("unexpected response in checkLogin");
+			});
+		}else popupClickHandler(e);
+	});
+
+	function popupClickHandler(e){
+		// console.log(e.target.name + ' was clicked');
+		if (e.target.name == 'popupOpenerDiv' || e.target.name == 'popupOpenerImg'){
+			showPopup();
+		} else if (e.target.id == '__popup_cancel_btn') {
+			closePopup();
+		} else if (e.target.id == '__popup_submit_btn') {
+			console.log('save button clicked');
+			var name = document.getElementById('__popup_account_name_id');
+			var u = document.getElementById('__popup_new_username_id');
+			var p = document.getElementById('__popup_new_password_id');
+			if (!name || !u || !p){
+				console.log('element in popup not found');
+				return;
+			}
+			function hintNoInput(e) {
+				e.style.border = "2px solid red";
+			}
+			if (name.value == "") {
+				hintNoInput(name);
+				return;
+			} else if (u.value == "") {
+				hintNoInput(u);
+				return;
+			} else if (p.value == "") {
+				hintNoInput(p);
+				return;
+			}
+			var msg = {
+				addEntry: true,
+				aValue: name.value,
+				uValue: u.value,
+				pValue: p.value
+			}
+			chrome.runtime.sendMessage(msg, function(response){
+				console.log(response.done);
+			});
+			closePopup();
+		}
+	}
+
+	// move below functions in if encountering problems
+}
 
 function addPopupOpener(input) {
 	var inputRect = input.getBoundingClientRect();
@@ -232,3 +431,94 @@ function closePopup() {
 	}
 	// document.getElementById("POPUP-CONTAINER").style.display = "none";
 }
+
+// // the list of all documents
+// var docs = new Array();
+// docs.push(document);
+// // in case of iFrame
+// // @TODO: problem remains for HTML iframe element because of same origin policy
+// var iFrames = document.getElementsByTagName('iframe');
+// for (var i = iFrames.length - 1; i >= 0; i--) {
+// 	var doc1 = iFrames[i].contentDocument;
+// 	if (doc1 != null && doc1 != undefined){
+// 		docs.push(doc1);
+// 	}else {
+// 		var doc2 = iFrames[i].contentWindow.document;
+// 		if (doc2 != null || doc2 != undefined){
+// 			docs.push(doc2);
+// 		}else {
+// 			console.log('unresolved document in iframe id: ' + iFrames[i].id);
+// 		}
+// 	}
+// }
+// console.log('the number of documents: ' + docs.length);
+
+// // add a popup div to body
+// addPopup();
+// var usernameId, passwordId;
+// var hasPassword = false;
+// for (var i = docs.length - 1; i >= 0; i--) {
+// 	var inputs = docs[i].getElementsByTagName('INPUT');
+// 	for (var i = inputs.length - 1; i >= 0; i--) {
+// 		var input = inputs[i];
+// 		// add buttons to account id and password input elements
+// 		if ( (input.type == 'password' || input.name == 'password') && input.id != '__popup_new_password_id' ){
+// 			input.style.border = "3px solid red";
+// 			// addButton(input);
+// 			hasPassword = true;
+// 			passwordId = input.id;
+// 			console.log('find password id: ' + passwordId);
+// 			addPopupOpener(input);
+// 		} else if ( (input.type == 'text' || input.type == 'email') && input.id != '__popup_new_username_id'  && hasPassword) {
+// 			input.style.border = "3px solid yellow";
+// 			hasPassword = false;
+// 			usernameId = input.id;
+// 			console.log('find username id: ' + usernameId);
+// 			addPopupOpener(input);
+// 		} 
+// 	}
+// }
+
+// // add event listener
+// document.addEventListener('click', function(e){
+// 	// console.log(e.target.name + ' was clicked');
+// 	if (e.target.name == 'popupOpenerDiv' || e.target.name == 'popupOpenerImg'){
+// 		showPopup();
+// 	} else if (e.target.id == '__popup_cancel_btn') {
+// 		closePopup();
+// 	} else if (e.target.id == '__popup_submit_btn') {
+// 		console.log('save button clicked');
+// 		var name = document.getElementById('__popup_account_name_id');
+// 		var u = document.getElementById('__popup_new_username_id');
+// 		var p = document.getElementById('__popup_new_password_id');
+// 		if (!name || !u || !p){
+// 			console.log('element in popup not found');
+// 			return;
+// 		}
+// 		function hintNoInput(e) {
+// 			e.style.border = "2px solid red";
+// 		}
+// 		if (name.value == "") {
+// 			hintNoInput(name);
+// 			return;
+// 		} else if (u.value == "") {
+// 			hintNoInput(u);
+// 			return;
+// 		} else if (p.value == "") {
+// 			hintNoInput(p);
+// 			return;
+// 		}
+// 		var msg = {
+// 			aValue: name.value,
+// 			uValue: u.value,
+// 			pValue: p.value
+// 		}
+// 		if (!chrome.runtime)
+// 			chrome.runtime = chrome.extension;
+// 		chrome.runtime.sendMessage(msg, function(response){
+// 			console.log(response.done);
+// 		});
+// 		closePopup();
+// 	}
+// });
+

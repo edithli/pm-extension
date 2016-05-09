@@ -11,6 +11,19 @@ function getCurrentURL(callback) {
 	});
 }
 
+// retrieve user's checksum
+var checksum = document.getElementById("checksum");
+var xmlhttp = new XMLHttpRequest();
+xmlhttp.onreadystatechange = function(){
+	if (xmlhttp.readyState == 4 && xmlhttp.status == 200){
+		if (xmlhttp.responseText == "no_user"){
+			checksum.value = "请登录";
+		}else checksum.value = xmlhttp.responseText;
+	}
+}
+xmlhttp.open("GET", "/ChecksumServlet");
+xmlhttp.send();
+
 document.addEventListener('DOMContentLoaded', function() {
 	getCurrentURL(function(url){
 		document.getElementById('url').textContent = url;
@@ -28,5 +41,3 @@ document.addEventListener('DOMContentLoaded', function() {
 		})();
 	}
 });
-
-console.log('popup.js end');
