@@ -4,6 +4,7 @@ console.log('content script running!');
 // Constants
 var LOGIN_URL = "http://localhost:8080/pm-server/login.html";
 var REGISTER_URL = "http://localhost:8080/pm-server/register.html";
+var URL_QUERY_URL = "http://localhost:8080/pm-server/QueryURLServlet";
 
 var passwordId, usernameId;
 
@@ -68,8 +69,8 @@ chrome.runtime.sendMessage({checkURL: true}, function(response){
 			var checksum = document.getElementById("checksum-input").value;
 			console.log("CS:read in register form : " + username + " " + mpw + " " + checksum);
 			// send mpw and checksum to background for initialization
-			chrome.runtime.sendMessage({
-				register: true, username: username, mpwValue: mpw, checksum: checksum}, 
+			chrome.runtime.sendMessage({register: true, username: username, 
+				mpwValue: mpw, checksum: checksum}, 
 				function(response){
 					console.log("CS register receive cipher checksum: " + response.cipherChecksum);
 					document.getElementById("cipher-checksum").value = response.cipherChecksum;
@@ -77,18 +78,58 @@ chrome.runtime.sendMessage({checkURL: true}, function(response){
 			});
 		});
 	} else if (response.autofill){
+		var username = response.username;
+		var thisurl = response.url;
 		detectLoginForm();
-		if (passwordId && usernameId){
-			document.getElementById(usernameId).value = response.nickname;
-			document.getElementById(passwordId).value = response.password;
-			addPopup();
-			dialogOpenerHandler();
-		} else {
-			console.error("There should be a complete login form");
+		// query server for entry
+		var xhr = new XMLHttpRequest();
+		xhr.onreadystatechange = function(){
+			if (xhr.readyState == 4 && xhr.status == 200){
+				var resp = JSON.parse(xhr.responseText);
+				if (resp.hasEntry == true){
+					console.log("user has entry in " + url);
+					console.log('entry info: ' + xhr.responseText);
+					var ctpwd = resp.password; 
+					var thispwd = ctpwd;   // @TODO !!!!!!!!!!!!!!!!
+					if (passwordId && usernameId){
+						document.getElementById(usernameId).value = resp.nickname;
+						document.getElementById(passwordId).value = thispwd;
+						addPopup();
+						dialogOpenerHandler();
+					} else console.error("There should be a login form");
+					// sendResponse({autofill: true, nickname: resp.nickname, password: ctpwd});
+				}
+			}
 		}
+		xhr.open("POST", URL_QUERY_URL);
+		xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xhr.send(JSON.stringify({username: username, url: thisurl}));
+
+		// if (passwordId && usernameId){
+		// 	document.getElementById(usernameId).value = response.nickname;
+		// 	document.getElementById(passwordId).value = response.password;
+		// 	addPopup();
+		// 	dialogOpenerHandler();
+		// } else {
+		// 	console.error("There should be a complete login form");
+		// }
 	} else {
 		// normalPage();
 		handleNormalPage();
+	}
+});
+
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
+	console.log("receiving msg");
+	if (request.autofill){
+		if (passwordId && usernameId){
+			document.getElementById(usernameId).value = request.nickname;
+			document.getElementById(passwordId).value = request.password;
+			// addPopup();
+			// dialogOpenerHandler();
+		} else {
+			console.error("There should be a complete login form");
+		}
 	}
 });
 

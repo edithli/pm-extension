@@ -11,18 +11,21 @@ function getCurrentURL(callback) {
 	});
 }
 
-// retrieve user's checksum
-var checksum = document.getElementById("checksum");
-var xmlhttp = new XMLHttpRequest();
-xmlhttp.onreadystatechange = function(){
-	if (xmlhttp.readyState == 4 && xmlhttp.status == 200){
-		if (xmlhttp.responseText == "no_user"){
-			checksum.value = "请登录";
-		}else checksum.value = xmlhttp.responseText;
+function getChecksum(){
+	// retrieve user's checksum
+	var checksum = document.getElementById("checksum");
+	checksum.textContent = "test";
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onreadystatechange = function(){
+		if (xmlhttp.readyState == 4 && xmlhttp.status == 200){
+			if (xmlhttp.responseText.match("no_user")){
+				checksum.textContent = "请登录";
+			}else checksum.textContent = xmlhttp.responseText;
+		}
 	}
+	xmlhttp.open("GET", "/ChecksumServlet");
+	xmlhttp.send();
 }
-xmlhttp.open("GET", "/ChecksumServlet");
-xmlhttp.send();
 
 document.addEventListener('DOMContentLoaded', function() {
 	getCurrentURL(function(url){
@@ -40,4 +43,5 @@ document.addEventListener('DOMContentLoaded', function() {
 			};
 		})();
 	}
+	getChecksum();
 });

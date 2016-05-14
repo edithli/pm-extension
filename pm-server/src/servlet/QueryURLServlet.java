@@ -1,5 +1,6 @@
 package servlet;
 
+import core.DatabaseOperator;
 import core.LoginEntry;
 import core.User;
 import org.json.JSONObject;
@@ -32,17 +33,22 @@ public class QueryURLServlet extends HttpServlet {
         JSONObject j = new JSONObject(sb.toString());
         System.out.println("query url req: " + sb.toString());
         String username = j.getString("username");
-        String url = j.getString("url");
-        User user = new User(username, null, null);
-        LoginEntry e = user.queryByDomain(url);
-        if (e == null){
-            resp.getWriter().println("");
-        }else {
-            JSONObject result = new JSONObject();
-            result.append("nickname", e.nickname);
-            result.append("password", e.ctpwd);
-            System.out.println("query url result: " + result.toString());
-            resp.getWriter().println(result.toString());
+        String domain = j.getString("domain");
+        JSONObject result = new JSONObject();
+        if (DatabaseOperator.getInstance().queryUser(username) == null){
+            result.append("noUser", true);
+        } else {
+            User user = new User(username, null, null);
+            LoginEntry e = user.queryByDomain(domain);
+            if (e == null) {
+                result.append("noEntry", true);
+            } else {
+                result.append("hasEntry", true);
+                result.append("nickname", e.nickname);
+                result.append("password", e.ctpwd);
+            }
         }
+        System.out.println("query url result: " + result.toString());
+        resp.getWriter().println(result.toString());
     }
 }

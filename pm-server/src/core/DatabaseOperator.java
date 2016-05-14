@@ -93,7 +93,7 @@ public class DatabaseOperator {
             pst.setString(1, username);
             ResultSet rs = pst.executeQuery();
             if (rs.next()){
-                user = new User(rs.getString("username"), rs.getString("pwdHint"), rs.getString("cipherChecksum"));
+                user = new User(rs.getString("username"), rs.getString("password_hint"), rs.getString("cipher_checksum"));
             }
             pst.close();
             rs.close();
@@ -113,11 +113,13 @@ public class DatabaseOperator {
     }
 
     public LoginEntry queryInUser(User user, String domain){
-        String sql = "select * from ? where domain = ?";
+//        String sql = "select * from ? where domain = ?";
+        String sql = "SELECT * FROM `pm-extension`." + user.tableName() + " WHERE domain = \"" + domain + "\"";
         try {
             PreparedStatement pst = connection.prepareStatement(sql);
-            pst.setString(1, user.tableName());
-            pst.setString(2, "`" + domain + "`");
+//            pst.setString(1, user.tableName());
+//            pst.setString(2, "\"" + domain + "\"");
+            System.out.println("query in user: " + sql);
             ResultSet rs = pst.executeQuery();
             if (rs.next()){
                 LoginEntry result = new LoginEntry(rs.getString("domain"), rs.getString("ac_name"),

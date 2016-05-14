@@ -42,18 +42,18 @@ loadJSON('data/grammar.cfg', function(text){
 	// console.log(!ctr);
 	// derive(pt);
 	// var arr = encodePwd("helloworld"); //@TODO: debug !!!!!!!!!!!!!!!!!!!!!!!!!!! for "checksum"
+	// decodePwd(arr);
 	// var pt = encrypt("pwd", arr);
 	// decodePwd(decrypt("pwd", pt));
 	// decodePwd(decrypt("pwd123", pt));
 	// decodePwd(decrypt("lsdkjfe32", pt));
 	// decodePwd(decrypt("pwD", pt));
-	// decodePwd(arr);
 	// var test = new Uint32Array(ARR_LEN * MAX_PT_LEN);
 	// window.crypto.getRandomValues(test);
 	// decodePwd(test);
 });
 loadJSON('data/vault_dist.cfg', function(text) {
-	vaultDist = JSON.parse(text); 	
+	vaultDist = JSON.parse(text);
 	// handle vaultDist
 	for (var key in vaultDist){
 		var total = 0;
@@ -82,6 +82,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 	// console.log("enter listener");
 	if (sender.tab) {
 		var url = sender.tab.url;
+		var domain = getDomain(url);
 		if (url == LOGIN_URL){
 			if (request.checkURL){
 				// console.log("request from login page: " + url);
@@ -90,7 +91,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 				console.log("request from login page: " + url);
 				username = request.username;
 				mpw = request.mpwValue;
-				checksum = request.cipherChecksum;//@TODO!!!!!!!!
+				var cipherChecksum = request.cipherChecksum;
+				checksum = decryptPwd(mpw, cipherChecksum);
 				console.log("bk: got login info: " + username + " " + mpw + " " + checksum);
 				if (request.closeTab){
 					closeCurrentTab();
@@ -98,7 +100,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 			}
 		} else if (url == REGISTER_URL){
 			if (request.checkURL){
-				console.log("request from register page: " + url);
 				sendResponse({register: true});
 			}else if (request.register) {
 				console.log("request to initialize from " + url);
@@ -108,32 +109,43 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 				console.log("bk: get register info: " + username + " " + mpw + " " + checksum);
 				// encrypt checksum for server to store
 				// var cipherChecksum = sjcl.codec.hex.fromBits(encrypt(mpw, encodePwd())) @TODO
-				var cipherChecksum = checksum;
+				var cipherChecksum = encryptPwd(mpw, checksum);
+				console.log("cipherChecksum: " + cipherChecksum);
 				sendResponse({cipherChecksum: cipherChecksum});
 			}
 		} else if (request.checkURL){
 			// check login first !!!!!!!!!!
-
-			// check for auto-completion
-			var xhr = new XMLHttpRequest();
-			xhr.onreadystatechange = function(){
-				if (xhr.readyState == 4 && xhr.status == 200){
-					var resp = JSON.parse(xhr.responseText);
-					if (resp.hasEntry){
-						console.log("user has entry in " + url);
-						console.log('entry info: ' + xhr.responseText);
-						var ctpwd = resp.password; // @TODO !!!!!!!!!!!!!!!!
-
-						sendResponse({autofill: true, nickname: resp.nickname, password: ctpwd});
-					}else sendResponse({normalPage: true});
+			if (!username || !mpw){
+				sendResponse({nothing: true});
+			} else {
+				// check for auto-completion
+				var xhr = new XMLHttpRequest();
+				xhr.onreadystatechange = function(){
+					if (xhr.readyState == 4 && xhr.status == 200){
+						var resp = JSON.parse(xhr.responseText);
+						if (resp.hasEntry){
+							console.log("user has entry in " + url);
+							console.log('entry info: ' + xhr.responseText);
+							var ctpwd = resp.password; // @TODO !!!!!!!!!!!!!!!!
+							console.log("read in cipher pwd: " + ctpwd);
+							var thispwd = decryptPwd(mpw, ctpwd);
+							console.log("decrypt get password: " + thispwd);
+							chrome.tabs.sendMessage(sender.tab.id, {autofill: true, nickname: resp.nickname, password: thispwd}, function(response){});
+							// sendResponse({autofill: true, nickname: resp.nickname, password: ctpwd});
+						}
+						// else 
+							// sendResponse({normalPage: true});
+					}
 				}
+				xhr.open("POST", URL_QUERY_URL);
+				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+				xhr.send(JSON.stringify({
+					username: username,
+					domain: domain
+					// url: url
+				}));
+				sendResponse({nothing: true});
 			}
-			xhr.open("POST", URL_QUERY_URL);
-			xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-			xhr.send(JSON.stringify({
-				username: username,
-				url: url
-			}));
 
 			// sendResponse({normalPage: true});
 		} else if (request.checkLogin){
@@ -149,7 +161,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 				var a = request.aValue;
 				var u = request.uValue;
 				var p = request.pValue;
+				var ctpwd = encryptPwd(mpw, p);
 				console.log("receive from normal page: " + url + ": " + a + " " + u + " " + p);
+				console.log("encrypt pwd: " + p + " get : " + ctpwd);
 				sendResponse({done: "done"});
 				// send encrypted data back to server
 				var xhr = new XMLHttpRequest();
@@ -164,10 +178,11 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 				xhr.send(JSON.stringify({
 					username: username,
-					domain:url, 
+					// domain:url, 
+					domain: domain,
 					ac_name:a,
 					nickname:u,
-					ctpwd:p    //@TODO!!!!!!!!!!!!!!!!!!
+					ctpwd:ctpwd
 				}));
 			}
 		}else console.log("unexpected request: \n" + request);
@@ -179,7 +194,7 @@ var mpw, username, checksum;
 /*===================================================
  *            			Constants 
  *===================================================*/
- var MAX_PT_LEN = 50; // max number of rules in a parse tree
+ var MAX_PT_LEN = 50; // max number of rules in a parse tree ------------ this cannot be too long for database to keep
  var MAX_SG_LEN = 50;
  var ARR_LEN = 4; // the number of elements in an encoding of Uint32Array
  var AES_ITER = 10000; // iteration count of aes encryption
@@ -198,54 +213,85 @@ var URL_QUERY_URL = "http://localhost:8080/pm-server/QueryURLServlet";
  *            			Methods 
  *===================================================*/
 
-function login() {
-
+function getDomain(url){
+	var domain;
+	if (url.indexOf("://") > -1)
+		domain = url.split("/")[2];
+	else domain = domain.split("/")[0];
+	domain = domain.split(":")[0];
+	// domain = domain.substring(domain.indexOf(".")+1);
+	console.log("domain: " + domain + " of url: " + url);
+	return domain;
 }
 
 function test() {
-	var password = "password";
-	var plaintext = sjcl.codec.hex.toBits("23047ADBDEF23");
-	var count = 10000;
-	var length = 256;
-	var salt = sjcl.random.randomWords(4, 0);
-	console.log("salt: " + sjcl.codec.hex.fromBits(salt));
-	var iv = sjcl.random.randomWords(4, 0);
-	console.log("iv: " + sjcl.codec.hex.fromBits(iv));
-	var key = sjcl.misc.pbkdf2(password, salt, count, length);
-	console.log("key: " + sjcl.codec.hex.fromBits(key));
-	var aes = new sjcl.cipher.aes(key);
-	var enc = sjcl.mode.ctr.encrypt(aes, plaintext, iv);
-	console.log(sjcl.codec.hex.fromBits(enc));
+	decryptPwd("pwd", encryptPwd("pwd", "plaintext"));
+	// var pwd = "password";
+	// var codes = encodePwd("helloworld");
+	// // decodePwd(codes);
+	// var ct = encrypt(pwd, codes);
 
-	var prf = new sjcl.cipher.aes(sjcl.misc.pbkdf2("wrongpwd", salt, count, length));
-	var dec = sjcl.mode.ctr.decrypt(prf, enc, iv);
-	console.log(sjcl.codec.hex.fromBits(dec));
+	// var ctstr = sjcl.codec.hex.fromBits(ct);
+	// console.log("str ct: " + ctstr);
+	// console.log(sjcl.codec.base64.fromBits(ct));
+	// console.log(sjcl.codec.base32.fromBits(ct));
+	// var ctbits = sjcl.codec.hex.toBits(ctstr);
+	// // console.log("after: " + sjcl.codec.hex.fromBits(ctbits));
+
+	// var ptarr = decrypt("password", ctbits);
+	// var str = decodePwd(ptarr);
+
+	// var password = "password";
+	// var wpwd = "wrongpwd";
+	// var plaintext = sjcl.codec.hex.toBits("23047ADBDEF23");
+	// var count = 10000;
+	// var length = 256;
+	// var salt = sjcl.random.randomWords(4, 0);
+	// console.log("salt: " + sjcl.codec.hex.fromBits(salt));
+	// var iv = sjcl.random.randomWords(4, 0);
+	// console.log("iv: " + sjcl.codec.hex.fromBits(iv));
+	// var key = sjcl.misc.pbkdf2(password, salt, count, length);
+	// console.log("key: " + sjcl.codec.hex.fromBits(key));
+	// var aes = new sjcl.cipher.aes(key);
+	// var enc = sjcl.mode.ctr.encrypt(aes, plaintext, iv);
+	// console.log(sjcl.codec.hex.fromBits(enc));
+
+	// var prf = new sjcl.cipher.aes(sjcl.misc.pbkdf2("wrongpwd", salt, count, length));
+	// var dec = sjcl.mode.ctr.decrypt(prf, enc, iv);
+	// console.log(sjcl.codec.hex.fromBits(dec));
 }
 
 function encryptPwd(mpw, plaintext){ // @TODO: debug!!!!!!!!!!!!!!!!
 	var arr = encodePwd(plaintext);
 	var ctbits = encrypt(mpw, arr);
-	return sjcl.codec.base32.fromBits(ctbits);
+	return sjcl.codec.hex.fromBits(ctbits);
+	// return ctbits;
 }
 
 function decryptPwd(mpw, ciphertext){
-	var arr = decrypt(mpw, sjcl.codec.base32.toBits(ciphertext));
+	// var arr = decrypt(mpw, ciphertext);
+	var arr = decrypt(mpw, sjcl.codec.hex.toBits(ciphertext));
 	return decodePwd(arr);
 }
 
 // encrypt a Uint32Array
 // return a bitArray
 function encrypt(password, arr){
-	console.log("encrypt");
+	// console.log("encrypt + arr len: " + arr.length);
 	var str = "";
-	for (var i = 0; i < arr.length; i++)
+	for (var i = 0; i < arr.length; i++){
+		var tmp = arr[i].toString(16);
+		for (var j = tmp.length; j < 8; j++)
+			str += "0";
 		str += arr[i].toString(16);
+		// console.log("arr " + i + " : " + arr[i].toString(16));
+	}
 	// console.log("plaintext: " + str);
 	// compute aes key
 	var salt = sjcl.random.randomWords(SALT_WORD_LEN, 0);
 	// console.log("salt: " + sjcl.codec.hex.fromBits(salt));
 	var key = sjcl.misc.pbkdf2(password, salt, AES_ITER, KEY_LEN);
-	console.log("key: " + sjcl.codec.hex.fromBits(key));
+	// console.log("key: " + sjcl.codec.hex.fromBits(key));
 	var plaintext = sjcl.codec.hex.toBits(str);
 	var aes = new sjcl.cipher.aes(key);
 	var iv = sjcl.random.randomWords(IV_WORD_LEN, 0);
@@ -260,7 +306,7 @@ function encrypt(password, arr){
 
 	// var ct = sjcl.encrypt(password, str, {iter:10000, ks:256, adata:ADATA});
 	// return ct.match(/"ct":"([^"]*)"/)[1];
-	console.log("ct length: " + sjcl.bitArray.bitLength(ct));
+	// console.log("ct length: " + sjcl.bitArray.bitLength(ct));
 	return ct;
 }
 
@@ -271,6 +317,7 @@ function decrypt(password, ct){
 	// if (adata != ADATA)
 	// 	throw new sjcl.exception.invalid("adata not correct!!");
 	console.log("decrypt");
+
 	var salt = sjcl.bitArray.bitSlice(ct, 0, SALT_BIT_LEN);
 	var iv = sjcl.bitArray.bitSlice(ct, SALT_BIT_LEN, SALT_BIT_LEN + IV_BIT_LEN);
 	var ciphertext = sjcl.bitArray.bitSlice(ct, SALT_BIT_LEN + IV_BIT_LEN);
@@ -278,7 +325,7 @@ function decrypt(password, ct){
 	// console.log("iv: " + sjcl.codec.hex.fromBits(iv));
 	// console.log("ciphertext: " + sjcl.codec.base64.fromBits(ciphertext));
 	var key = sjcl.misc.pbkdf2(password, salt, AES_ITER, KEY_LEN);
-	console.log("key: " + sjcl.codec.hex.fromBits(key));
+	// console.log("key: " + sjcl.codec.hex.fromBits(key));
 	var aes = new sjcl.cipher.aes(key);
 	var ptbits = sjcl.mode.ctr.decrypt(aes, ciphertext, iv);
 	var pt = sjcl.codec.hex.fromBits(ptbits);
@@ -288,6 +335,7 @@ function decrypt(password, ct){
 	var arr = new Array(MAX_PT_LEN * ARR_LEN); 
 	for (var i = 0; i < arr.length; i++){
 		arr[i] = parseInt(pt.substring(8 * i, 8 * (i + 1)), 16);
+		// console.log("arr " + i + " : " + arr[i].toString(16));
 	}
 	return arr;
 }
@@ -321,11 +369,11 @@ function decodePwd(arr){
  			codeArr[i] = arr[index];
  		var rule = decodeRule(codeArr, lhs);
  		var rhs = rule.rhs;
- 		console.log("get rule: " + rule.toString());
+ 		// console.log("get rule: " + rule.toString());
 		pt.push(rule);
  		// get right hand side non-terminals
  		var nonTList = new Array();
- 		if (lhs == "G") {
+ 		if (lhs == "G" && rhs != "|_|") {
 			nonTList = rhs.split(",");
 			nonTList.reverse();
 		} else if (lhs.charAt(0) == "W") {
@@ -382,7 +430,7 @@ function parse(s) {
 	}
 	// build a parse tree base on the rules
 	var base = pi[0][s.length-1];
-	console.log("parse string " + s + " with rule: \n" + base.toString());
+	// console.log("parse string " + s + " with rule: \n" + base.toString());
 	var pt = new Array();
 	var topRule = new Rule("G", base.lhs);
 	if (topRule.getProb() == 0.0){
@@ -415,7 +463,7 @@ function parse(s) {
 			}
 		}
 	}
-	console.log("parse tree of " + s + "\n" + pt.toString());
+	// console.log("parse tree of " + s + "\n" + pt.toString());
 	return pt;
 }
 
@@ -558,7 +606,7 @@ function loadJSON(path, callback) {
 }
 
 function encodeProb(p, q) {
-	console.log("encode prob: p - " + p + " q - " + q);
+	// console.log("encode prob: p - " + p + " q - " + q);
 	// 128-bits secure random value
 	// compute x + p - (x mod q)
 	// x = arr[3] * 2^96 + arr[2] * 2^64 + arr[1] * 2^32 + arr[0]
@@ -611,7 +659,7 @@ function decodeProb(arr, q) {
 		sum += ((arr[i] % q) * (Math.pow(ut, i) % q)) % q;
 	}
 	var p = sum % q;
-	console.log("decode result: " + p);
+	// console.log("decode result: " + p);
 	return p;
 }
 
