@@ -2,10 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="31a4ef41-a0ec-4773-a47d-a269a8ea1c31" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/artifacts/pm_server_war_exploded/WEB-INF/classes/core/DatabaseOperator.class" afterPath="$PROJECT_DIR$/out/artifacts/pm_server_war_exploded/WEB-INF/classes/core/DatabaseOperator.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/artifacts/pm_server_war_exploded/WEB-INF/classes/servlet/QueryURLServlet.class" afterPath="$PROJECT_DIR$/out/artifacts/pm_server_war_exploded/WEB-INF/classes/servlet/QueryURLServlet.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/pm-server/core/DatabaseOperator.class" afterPath="$PROJECT_DIR$/out/production/pm-server/core/DatabaseOperator.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/pm-server/servlet/QueryURLServlet.class" afterPath="$PROJECT_DIR$/out/production/pm-server/servlet/QueryURLServlet.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../background.js" afterPath="$PROJECT_DIR$/../background.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/DatabaseOperator.java" afterPath="$PROJECT_DIR$/src/core/DatabaseOperator.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/servlet/QueryURLServlet.java" afterPath="$PROJECT_DIR$/src/servlet/QueryURLServlet.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/web/register.html" afterPath="$PROJECT_DIR$/web/register.html" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/src/servlet/AddUserServlet.java" afterPath="$PROJECT_DIR$/src/servlet/AddAccountServlet.java" />
     </list>
     <ignored path="pm-server.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -39,7 +44,7 @@
         <entry file="file://$PROJECT_DIR$/web/register.html">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="450">
-              <caret line="25" column="53" selection-start-line="25" selection-start-column="53" selection-end-line="25" selection-end-column="53" />
+              <caret line="25" column="9" selection-start-line="25" selection-start-column="9" selection-end-line="25" selection-end-column="9" />
               <folding />
             </state>
           </provider>
@@ -55,26 +60,19 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="DatabaseOperator.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="DatabaseOperator.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/core/DatabaseOperator.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="227">
-              <caret line="153" column="0" selection-start-line="153" selection-start-column="0" selection-end-line="153" selection-end-column="0" />
+            <state relative-caret-position="156">
+              <caret line="65" column="29" selection-start-line="65" selection-start-column="29" selection-end-line="65" selection-end-column="29" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <marker date="1463210587361" expanded="true" signature="1481:1521" placeholder="insert into `user_info`... " />
-                <marker date="1463210587361" expanded="true" signature="2051:2567" placeholder="CREATE TABLE... missingValue" />
-                <marker date="1463210587361" expanded="true" signature="3077:3121" placeholder="select * fro... user_info" />
-                <marker date="1463210587361" expanded="true" signature="3891:3923" placeholder="select * fro... ?" />
-                <marker date="1463210587361" expanded="true" signature="3948:3961" placeholder="SELECT * FRO... " />
-                <marker date="1463210587361" expanded="true" signature="3948:3962" placeholder="SELECT * FRO... missingValue" />
-                <marker date="1463210587361" expanded="true" signature="3948:4016" placeholder="SELECT * FRO... missingValue" />
-                <marker date="1463210587361" expanded="true" signature="3948:4019" placeholder="SELECT * FRO... missingValue" />
-                <marker date="1463210587361" expanded="true" signature="3948:4020" placeholder="SELECT * FRO... missingValue" />
-                <marker date="1463210587361" expanded="true" signature="3948:4033" placeholder="SELECT * FRO... missingValue" />
-                <marker date="1463210587361" expanded="true" signature="3948:4035" placeholder="SELECT * FRO... missingValue" />
-                <marker date="1463210587361" expanded="true" signature="4957:5133" placeholder="insert into missingValue... " />
-                <marker date="1463210587361" expanded="true" signature="5950:5964" placeholder="select * fro... missingValue" />
+                <marker date="1463237179366" expanded="true" signature="1481:1521" placeholder="insert into `user_info`... " />
+                <marker date="1463237179366" expanded="true" signature="2051:2567" placeholder="CREATE TABLE... missingValue" />
+                <marker date="1463237179366" expanded="true" signature="3077:3121" placeholder="select * fro... user_info" />
+                <marker date="1463237179366" expanded="true" signature="3948:4035" placeholder="SELECT * FRO... missingValue" />
+                <marker date="1463237179366" expanded="true" signature="4957:5133" placeholder="insert into missingValue... " />
+                <marker date="1463237179366" expanded="true" signature="5950:5964" placeholder="select * fro... missingValue" />
               </folding>
             </state>
           </provider>
@@ -83,7 +81,7 @@
       <file leaf-file-name="LoginServlet.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/servlet/LoginServlet.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="288">
+            <state relative-caret-position="342">
               <caret line="30" column="56" selection-start-line="30" selection-start-column="56" selection-end-line="30" selection-end-column="56" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -92,26 +90,36 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AddUserServlet.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/servlet/AddUserServlet.java">
+      <file leaf-file-name="AddAccountServlet.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/servlet/AddAccountServlet.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="539">
-              <caret line="46" column="0" selection-start-line="46" selection-start-column="0" selection-end-line="46" selection-end-column="0" />
+            <state relative-caret-position="-18">
+              <caret line="17" column="33" selection-start-line="17" selection-start-column="33" selection-end-line="17" selection-end-column="33" />
               <folding>
                 <element signature="imports" expanded="true" />
+                <element signature="e#523#524#0" expanded="true" />
+                <element signature="e#546#547#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="QueryURLServlet.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="LoginEntry.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/core/LoginEntry.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="180">
+              <caret line="10" column="29" selection-start-line="10" selection-start-column="29" selection-end-line="10" selection-end-column="29" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="QueryURLServlet.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/servlet/QueryURLServlet.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="377">
-              <caret line="40" column="55" selection-start-line="40" selection-start-column="55" selection-end-line="40" selection-end-column="55" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
+            <state relative-caret-position="450">
+              <caret line="38" column="42" selection-start-line="38" selection-start-column="42" selection-end-line="38" selection-end-column="42" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -119,7 +127,7 @@
       <file leaf-file-name="ChecksumServlet.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/servlet/ChecksumServlet.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="360">
+            <state relative-caret-position="324">
               <caret line="28" column="45" selection-start-line="28" selection-start-column="45" selection-end-line="28" selection-end-column="45" />
               <folding>
                 <element signature="e#459#460#0" expanded="true" />
@@ -144,20 +152,8 @@
       <file leaf-file-name="User.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/core/User.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="431">
+            <state relative-caret-position="612">
               <caret line="39" column="0" selection-start-line="39" selection-start-column="0" selection-end-line="39" selection-end-column="0" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="RegisterServlet.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/servlet/RegisterServlet.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="558">
-              <caret line="42" column="74" selection-start-line="42" selection-start-column="74" selection-end-line="42" selection-end-column="74" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -205,16 +201,16 @@
         <option value="$PROJECT_DIR$/src/servlet/RegisterServlet.java" />
         <option value="$PROJECT_DIR$/src/core/User.java" />
         <option value="$PROJECT_DIR$/web/register.html" />
-        <option value="$PROJECT_DIR$/src/core/DatabaseOperator.java" />
         <option value="$PROJECT_DIR$/src/servlet/QueryURLServlet.java" />
+        <option value="$PROJECT_DIR$/src/core/DatabaseOperator.java" />
+        <option value="$PROJECT_DIR$/src/servlet/AddAccountServlet.java" />
       </list>
     </option>
   </component>
-  <component name="JsBuildToolGruntFileManager" detection-done="true" sorting="DEFINITION_ORDER" />
-  <component name="JsBuildToolPackageJson" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsBuildToolGruntFileManager" detection-done="true" />
+  <component name="JsBuildToolPackageJson" detection-done="true" />
   <component name="JsGulpfileManager">
     <detection-done>true</detection-done>
-    <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="LogFilters">
     <option name="FILTER_ERRORS" value="false" />
@@ -233,8 +229,8 @@
   <component name="ProjectFrameBounds">
     <option name="x" value="-8" />
     <option name="y" value="-8" />
-    <option name="width" value="1936" />
-    <option name="height" value="1056" />
+    <option name="width" value="1382" />
+    <option name="height" value="744" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -280,6 +276,9 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="PackagesPane" />
+      <pane id="Scope" />
+      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -396,9 +395,6 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
-      <pane id="PackagesPane" />
-      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -953,19 +949,20 @@
       <workItem from="1463195397260" duration="69000" />
       <workItem from="1463195560262" duration="859000" />
       <workItem from="1463202893622" duration="10855000" />
+      <workItem from="1463236781958" duration="2029000" />
+      <workItem from="1463314570073" duration="2577000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="64182000" />
+    <option name="totallyTimeSpent" value="68788000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
+    <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
+    <editor active="false" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Java Enterprise" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -973,24 +970,25 @@
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3294893" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2473573" sideWeight="0.49707174" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.17916666" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.17862372" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.329429" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3294893" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3294893" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.6062603" sideWeight="0.49707174" order="2" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -1035,19 +1033,12 @@
           <caret line="114" column="22" selection-start-line="114" selection-start-column="22" selection-end-line="114" selection-end-column="22" />
           <folding>
             <element signature="imports" expanded="true" />
-            <marker date="1463210587361" expanded="true" signature="1481:1521" placeholder="insert into `user_info`... " />
-            <marker date="1463210587361" expanded="true" signature="2051:2567" placeholder="CREATE TABLE... missingValue" />
-            <marker date="1463210587361" expanded="true" signature="3077:3121" placeholder="select * fro... user_info" />
-            <marker date="1463210587361" expanded="true" signature="3891:3923" placeholder="select * fro... ?" />
-            <marker date="1463210587361" expanded="true" signature="3948:3961" placeholder="SELECT * FRO... " />
-            <marker date="1463210587361" expanded="true" signature="3948:3962" placeholder="SELECT * FRO... missingValue" />
-            <marker date="1463210587361" expanded="true" signature="3948:4016" placeholder="SELECT * FRO... missingValue" />
-            <marker date="1463210587361" expanded="true" signature="3948:4019" placeholder="SELECT * FRO... missingValue" />
-            <marker date="1463210587361" expanded="true" signature="3948:4020" placeholder="SELECT * FRO... missingValue" />
-            <marker date="1463210587361" expanded="true" signature="3948:4033" placeholder="SELECT * FRO... missingValue" />
-            <marker date="1463210587361" expanded="true" signature="3948:4035" placeholder="SELECT * FRO... missingValue" />
-            <marker date="1463210587361" expanded="true" signature="4957:5133" placeholder="insert into missingValue... " />
-            <marker date="1463210587361" expanded="true" signature="5950:5964" placeholder="select * fro... missingValue" />
+            <marker date="1463237179366" expanded="true" signature="1481:1521" placeholder="insert into `user_info`... " />
+            <marker date="1463237179366" expanded="true" signature="2051:2567" placeholder="CREATE TABLE... missingValue" />
+            <marker date="1463237179366" expanded="true" signature="3077:3121" placeholder="select * fro... user_info" />
+            <marker date="1463237179366" expanded="true" signature="3948:4035" placeholder="SELECT * FRO... missingValue" />
+            <marker date="1463237179366" expanded="true" signature="4957:5133" placeholder="insert into missingValue... " />
+            <marker date="1463237179366" expanded="true" signature="5950:5964" placeholder="select * fro... missingValue" />
           </folding>
         </state>
       </provider>
@@ -1062,12 +1053,14 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/servlet/AddUserServlet.java">
+    <entry file="file://$PROJECT_DIR$/src/servlet/AddAccountServlet.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="648">
           <caret line="48" column="36" selection-start-line="48" selection-start-column="36" selection-end-line="48" selection-end-column="36" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#523#524#0" expanded="true" />
+            <element signature="e#546#547#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1076,9 +1069,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1134,19 +1125,12 @@
           <caret line="114" column="22" selection-start-line="114" selection-start-column="22" selection-end-line="114" selection-end-column="22" />
           <folding>
             <element signature="imports" expanded="true" />
-            <marker date="1463210587361" expanded="true" signature="1481:1521" placeholder="insert into `user_info`... " />
-            <marker date="1463210587361" expanded="true" signature="2051:2567" placeholder="CREATE TABLE... missingValue" />
-            <marker date="1463210587361" expanded="true" signature="3077:3121" placeholder="select * fro... user_info" />
-            <marker date="1463210587361" expanded="true" signature="3891:3923" placeholder="select * fro... ?" />
-            <marker date="1463210587361" expanded="true" signature="3948:3961" placeholder="SELECT * FRO... " />
-            <marker date="1463210587361" expanded="true" signature="3948:3962" placeholder="SELECT * FRO... missingValue" />
-            <marker date="1463210587361" expanded="true" signature="3948:4016" placeholder="SELECT * FRO... missingValue" />
-            <marker date="1463210587361" expanded="true" signature="3948:4019" placeholder="SELECT * FRO... missingValue" />
-            <marker date="1463210587361" expanded="true" signature="3948:4020" placeholder="SELECT * FRO... missingValue" />
-            <marker date="1463210587361" expanded="true" signature="3948:4033" placeholder="SELECT * FRO... missingValue" />
-            <marker date="1463210587361" expanded="true" signature="3948:4035" placeholder="SELECT * FRO... missingValue" />
-            <marker date="1463210587361" expanded="true" signature="4957:5133" placeholder="insert into missingValue... " />
-            <marker date="1463210587361" expanded="true" signature="5950:5964" placeholder="select * fro... missingValue" />
+            <marker date="1463237179366" expanded="true" signature="1481:1521" placeholder="insert into `user_info`... " />
+            <marker date="1463237179366" expanded="true" signature="2051:2567" placeholder="CREATE TABLE... missingValue" />
+            <marker date="1463237179366" expanded="true" signature="3077:3121" placeholder="select * fro... user_info" />
+            <marker date="1463237179366" expanded="true" signature="3948:4035" placeholder="SELECT * FRO... missingValue" />
+            <marker date="1463237179366" expanded="true" signature="4957:5133" placeholder="insert into missingValue... " />
+            <marker date="1463237179366" expanded="true" signature="5950:5964" placeholder="select * fro... missingValue" />
           </folding>
         </state>
       </provider>
@@ -1161,12 +1145,14 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/servlet/AddUserServlet.java">
+    <entry file="file://$PROJECT_DIR$/src/servlet/AddAccountServlet.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="648">
           <caret line="48" column="36" selection-start-line="48" selection-start-column="36" selection-end-line="48" selection-end-column="36" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#523#524#0" expanded="true" />
+            <element signature="e#546#547#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1175,9 +1161,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1300,22 +1284,11 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/web/homepage.html" />
-    <entry file="file://$PROJECT_DIR$/src/core/LoginEntry.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="10" column="29" selection-start-line="10" selection-start-column="29" selection-end-line="10" selection-end-column="29" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/util/json/JSONObject.java" />
     <entry file="file://$PROJECT_DIR$/src/org/json/JSONObject.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="306">
           <caret line="26" column="7" selection-start-line="26" selection-start-column="7" selection-end-line="26" selection-end-column="7" />
-          <folding>
-            <element signature="imports" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1363,7 +1336,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/servlet/LoginServlet.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="288">
+        <state relative-caret-position="342">
           <caret line="30" column="56" selection-start-line="30" selection-start-column="56" selection-end-line="30" selection-end-column="56" />
           <folding>
             <element signature="imports" expanded="true" />
@@ -1373,7 +1346,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/servlet/ChecksumServlet.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="360">
+        <state relative-caret-position="324">
           <caret line="28" column="45" selection-start-line="28" selection-start-column="45" selection-end-line="28" selection-end-column="45" />
           <folding>
             <element signature="e#459#460#0" expanded="true" />
@@ -1386,7 +1359,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="54">
           <caret line="3" column="9" selection-start-line="3" selection-start-column="9" selection-end-line="3" selection-end-column="9" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1401,48 +1373,15 @@
     <entry file="file://$PROJECT_DIR$/web/register.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="450">
-          <caret line="25" column="53" selection-start-line="25" selection-start-column="53" selection-end-line="25" selection-end-column="53" />
+          <caret line="25" column="9" selection-start-line="25" selection-start-column="9" selection-end-line="25" selection-end-column="9" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/core/DatabaseOperator.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="227">
-          <caret line="153" column="0" selection-start-line="153" selection-start-column="0" selection-end-line="153" selection-end-column="0" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <marker date="1463210587361" expanded="true" signature="1481:1521" placeholder="insert into `user_info`... " />
-            <marker date="1463210587361" expanded="true" signature="2051:2567" placeholder="CREATE TABLE... missingValue" />
-            <marker date="1463210587361" expanded="true" signature="3077:3121" placeholder="select * fro... user_info" />
-            <marker date="1463210587361" expanded="true" signature="3891:3923" placeholder="select * fro... ?" />
-            <marker date="1463210587361" expanded="true" signature="3948:3961" placeholder="SELECT * FRO... " />
-            <marker date="1463210587361" expanded="true" signature="3948:3962" placeholder="SELECT * FRO... missingValue" />
-            <marker date="1463210587361" expanded="true" signature="3948:4016" placeholder="SELECT * FRO... missingValue" />
-            <marker date="1463210587361" expanded="true" signature="3948:4019" placeholder="SELECT * FRO... missingValue" />
-            <marker date="1463210587361" expanded="true" signature="3948:4020" placeholder="SELECT * FRO... missingValue" />
-            <marker date="1463210587361" expanded="true" signature="3948:4033" placeholder="SELECT * FRO... missingValue" />
-            <marker date="1463210587361" expanded="true" signature="3948:4035" placeholder="SELECT * FRO... missingValue" />
-            <marker date="1463210587361" expanded="true" signature="4957:5133" placeholder="insert into missingValue... " />
-            <marker date="1463210587361" expanded="true" signature="5950:5964" placeholder="select * fro... missingValue" />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/core/User.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="431">
+        <state relative-caret-position="612">
           <caret line="39" column="0" selection-start-line="39" selection-start-column="0" selection-end-line="39" selection-end-column="0" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/servlet/AddUserServlet.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="539">
-          <caret line="46" column="0" selection-start-line="46" selection-start-column="0" selection-end-line="46" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -1461,10 +1400,44 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/servlet/QueryURLServlet.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="377">
-          <caret line="40" column="55" selection-start-line="40" selection-start-column="55" selection-end-line="40" selection-end-column="55" />
+        <state relative-caret-position="450">
+          <caret line="38" column="42" selection-start-line="38" selection-start-column="42" selection-end-line="38" selection-end-column="42" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/servlet/AddAccountServlet.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-18">
+          <caret line="17" column="33" selection-start-line="17" selection-start-column="33" selection-end-line="17" selection-end-column="33" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#523#524#0" expanded="true" />
+            <element signature="e#546#547#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/LoginEntry.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="10" column="29" selection-start-line="10" selection-start-column="29" selection-end-line="10" selection-end-column="29" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/DatabaseOperator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="156">
+          <caret line="65" column="29" selection-start-line="65" selection-start-column="29" selection-end-line="65" selection-end-column="29" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <marker date="1463237179366" expanded="true" signature="1481:1521" placeholder="insert into `user_info`... " />
+            <marker date="1463237179366" expanded="true" signature="2051:2567" placeholder="CREATE TABLE... missingValue" />
+            <marker date="1463237179366" expanded="true" signature="3077:3121" placeholder="select * fro... user_info" />
+            <marker date="1463237179366" expanded="true" signature="3948:4035" placeholder="SELECT * FRO... missingValue" />
+            <marker date="1463237179366" expanded="true" signature="4957:5133" placeholder="insert into missingValue... " />
+            <marker date="1463237179366" expanded="true" signature="5950:5964" placeholder="select * fro... missingValue" />
           </folding>
         </state>
       </provider>

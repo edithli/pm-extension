@@ -264,13 +264,13 @@ function test() {
 function encryptPwd(mpw, plaintext){ // @TODO: debug!!!!!!!!!!!!!!!!
 	var arr = encodePwd(plaintext);
 	var ctbits = encrypt(mpw, arr);
-	return sjcl.codec.hex.fromBits(ctbits);
+	return sjcl.codec.base64.fromBits(ctbits);
 	// return ctbits;
 }
 
 function decryptPwd(mpw, ciphertext){
 	// var arr = decrypt(mpw, ciphertext);
-	var arr = decrypt(mpw, sjcl.codec.hex.toBits(ciphertext));
+	var arr = decrypt(mpw, sjcl.codec.base64.toBits(ciphertext));
 	return decodePwd(arr);
 }
 
