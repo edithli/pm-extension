@@ -15,9 +15,9 @@ import java.io.PrintWriter;
 /**
  * Created by lss on 2016/5/9.
  */
-@WebServlet("/AddUserServlet")
-public class AddUserServlet extends HttpServlet{
-    public AddUserServlet(){
+@WebServlet("/AddAccountServlet")
+public class AddAccountServlet extends HttpServlet{
+    public AddAccountServlet(){
         super();
     }
 
