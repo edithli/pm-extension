@@ -1,2 +1,5 @@
 pm-server/.idea/
 pm-server/out/
+pm-server/.idea/workspace.xml
+*.class
+pm-server/.idea/workspace.xml

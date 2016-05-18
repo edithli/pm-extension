@@ -31,7 +31,7 @@ loadJSON('data/grammar.cfg', function(text){
 	console.log('grammar done');
 	initialize();
 	// console.log(CryptoJS.AES.encrypt("hello", "password"));
-	// test();
+	test();
 
 	// var ct = encryptPwd("mpw", "helloworld");
 	// console.log("encryptPwd: " + ct);
@@ -91,7 +91,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 				console.log("request from login page: " + url);
 				username = request.username;
 				mpw = request.mpwValue;
-				var cipherChecksum = request.cipherChecksum;
+				var cipherChecksum = String(request.cipherChecksum);
 				checksum = decryptPwd(mpw, cipherChecksum);
 				console.log("bk: got login info: " + username + " " + mpw + " " + checksum);
 				if (request.closeTab){
@@ -126,10 +126,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 						if (resp.hasEntry){
 							console.log("user has entry in " + url);
 							console.log('entry info: ' + xhr.responseText);
-							var ctpwd = resp.password; // @TODO !!!!!!!!!!!!!!!!
-							console.log("read in cipher pwd: " + ctpwd);
+							var ctpwd = String(resp.password); 
 							var thispwd = decryptPwd(mpw, ctpwd);
-							console.log("decrypt get password: " + thispwd);
 							chrome.tabs.sendMessage(sender.tab.id, {autofill: true, nickname: resp.nickname, password: thispwd}, function(response){});
 							// sendResponse({autofill: true, nickname: resp.nickname, password: ctpwd});
 						}
@@ -203,11 +201,11 @@ var mpw, username, checksum;
  var IV_WORD_LEN = 4;
  var SALT_BIT_LEN = 128;
  var IV_BIT_LEN = 128;
+ var LOGIN_URL = "http://localhost:8080/pm-server/login.html";
+ var REGISTER_URL = "http://localhost:8080/pm-server/register.html";
+ var DATA_SERVER_URL = "http://localhost:8080/pm-server/AddAccountServlet";
+ var URL_QUERY_URL = "http://localhost:8080/pm-server/QueryURLServlet";
 
-var LOGIN_URL = "http://localhost:8080/pm-server/login.html";
-var REGISTER_URL = "http://localhost:8080/pm-server/register.html";
-var DATA_SERVER_URL = "http://localhost:8080/pm-server/AddUserServlet";
-var URL_QUERY_URL = "http://localhost:8080/pm-server/QueryURLServlet";
 
 /*===================================================
  *            			Methods 
@@ -225,7 +223,7 @@ function getDomain(url){
 }
 
 function test() {
-	decryptPwd("pwd", encryptPwd("pwd", "plaintext"));
+	decryptPwd("pwd", encryptPwd("pwd", "Banana5233483"));
 	// var pwd = "password";
 	// var codes = encodePwd("helloworld");
 	// // decodePwd(codes);
@@ -286,7 +284,7 @@ function encrypt(password, arr){
 		str += arr[i].toString(16);
 		// console.log("arr " + i + " : " + arr[i].toString(16));
 	}
-	// console.log("plaintext: " + str);
+	console.log("plaintext: " + str);
 	// compute aes key
 	var salt = sjcl.random.randomWords(SALT_WORD_LEN, 0);
 	// console.log("salt: " + sjcl.codec.hex.fromBits(salt));
@@ -329,7 +327,7 @@ function decrypt(password, ct){
 	var aes = new sjcl.cipher.aes(key);
 	var ptbits = sjcl.mode.ctr.decrypt(aes, ciphertext, iv);
 	var pt = sjcl.codec.hex.fromBits(ptbits);
-	// console.log("plaintext: " + pt);
+	console.log("plaintext: " + pt);
 
 	// split the string into arr
 	var arr = new Array(MAX_PT_LEN * ARR_LEN); 
@@ -369,14 +367,14 @@ function decodePwd(arr){
  			codeArr[i] = arr[index];
  		var rule = decodeRule(codeArr, lhs);
  		var rhs = rule.rhs;
- 		// console.log("get rule: " + rule.toString());
+ 		console.log("get rule: " + rule.toString());
 		pt.push(rule);
  		// get right hand side non-terminals
  		var nonTList = new Array();
  		if (lhs == "G" && rhs != "|_|") {
 			nonTList = rhs.split(",");
 			nonTList.reverse();
-		} else if (lhs.charAt(0) == "W") {
+		} else if (lhs.charAt(0) == "W") { //--------------------------------------------
 			for (var i = 0; i < rhs.length; i++)
 				nonTList.push("L_" + rhs.charAt(i));
 			nonTList.reverse();
@@ -439,10 +437,15 @@ function parse(s) {
 			if (s.charAt(i).match("[0-9]")){
 				pt.push(new Rule("G", "D1,G"));
 				pt.push(new Rule("D1", s.charAt(i)));
-			} else if (s.charAt(i).match("[a-zA-Z]")){
+			} else if (s.charAt(i).match("[a-zA-Z]")){ // ---------------------------------------------------------------
 				pt.push(new Rule("G", "W1,G"));
-				pt.push(new Rule("W1", s.charAt(i)));
-				pt.push(new Rule("L_" + s.charAt(i).toLowerCase(), s.charAt(i)));
+				pt.push(new Rule("W1", s.charAt(i).toLowerCase()));
+				if (s.charAt(i).match("[a-z]")){
+					pt.push(new Rule("L", "lower"));
+				} else {
+					pt.push(new Rule("L", "UPPER"));
+				}
+				// pt.push(new Rule("L_" + s.charAt(i).toLowerCase(), s.charAt(i)));
 			} else if (s.charAt(i).match("[\!\#\$\&\*\.\;\@\_]")) {
 				pt.push(new Rule("G", "Y1,G"));
 				pt.push(new Rule("Y1", s.charAt(i)));
@@ -463,22 +466,28 @@ function parse(s) {
 			}
 		}
 	}
-	// console.log("parse tree of " + s + "\n" + pt.toString());
+	console.log("parse tree of " + s + "\n" + pt.toString());
 	return pt;
 }
 
 function derive(pt) {
+	console.log("derive parse tree: " + pt.toString());
 	var str = "";
+	var buff = "";
 	for (var i = 0; i < pt.length; i++) {
-		if (pt[i].lhs.charAt(0).startsWith("L_")){
-			str += pt[i].rhs;
-		} else if (pt[i].lhs.startsWith("T_")){
-			str += pt[i].rhs;
-		} else if (pt[i].lhs == "G" || pt[i].lhs.startsWith("W") || pt[i].lhs == "T"){
-			continue;
-		} else {
-			str += pt[i].rhs;
+		if (pt[i].lhs.startsWith("W")) {
+			
 		}
+
+		// if (pt[i].lhs.charAt(0).startsWith("L_")){
+		// 	str += pt[i].rhs;
+		// } else if (pt[i].lhs.startsWith("T_")){
+		// 	str += pt[i].rhs;
+		// } else if (pt[i].lhs == "G" || pt[i].lhs.startsWith("W") || pt[i].lhs == "T"){
+		// 	continue;
+		// } else {
+		// 	str += pt[i].rhs;
+		// }
 	}
 	console.log("derive get string: " + str);
 	return str;
@@ -517,8 +526,22 @@ function parseWord(s) {
 	var word = trie.getSimilarKey(s.toLowerCase());
 	if (word) {
 		var rule = new Rule(getWordGroup(word), word);
-		for (var i = 0; i < word.length; i++) 
-			rule.addExtra(new Rule("L_" + word.charAt(i), s.charAt(i)));
+		// there should be L rules
+		var re;
+		if ((re = s.match("[A-Z]+")) && re[0] == s){
+			rule.addExtra(new Rule("L", "UPPER"));
+		} else if ((re = s.match("[a-z]+")) && re[0] == s){
+			rule.addExtra(new Rule("L", "lower"));
+		} else if ((re = s.match("[A-Z][a-z]+")) && re[0] == s){
+			rule.addExtra(new Rule("L", "Caps"));
+		} else {
+			rule.addExtra(new Rule("L", "l33t"));
+			for (var i = 0; i < word.length; i++){
+				rule.addExtra(new Rule("L_" + word.charAt(i), s.charAt(i)));
+			}
+		}
+		// for (var i = 0; i < word.length; i++) 
+		// 	rule.addExtra(new Rule("L_" + word.charAt(i), s.charAt(i)));
 		return rule;
 	}
 	return null;
@@ -648,6 +671,17 @@ function encodeProb(p, q) {
 		} else arr[0] += t;
 	}
 	// now arr represents the final result
+
+	// var str = "";
+	// for (var i = 0; i < arr.length; i++){
+	// 	var tmp = arr[i].toString(16);
+	// 	for (var j = tmp.length; j < 8; j++)
+	// 		str += "0";
+	// 	str += arr[i].toString(16);
+	// 	// console.log("arr " + i + " : " + arr[i].toString(16));
+	// }
+	// console.log("arr: " + str);
+
 	return arr;
 }
 
@@ -921,7 +955,7 @@ function SubGrammar(rules) {
 				for (var j = 0; j < ARR_LEN; j++, index++)
 					tmparr[i] = sgarr[index];
 				var rule = decodeRule(tmparr, lhs);
-				console.log("decode get rule: " + rule.toString());
+				// console.log("decode get rule: " + rule.toString());
 				sgrules.push(rule);
 				// get nonTList
 				if (lhs == "G") {

@@ -65,7 +65,7 @@ public class DatabaseOperator {
                     "  `domain` VARCHAR(255) NOT NULL,\n" +
                     "  `ac_name` VARCHAR(255) NULL,\n" +
                     "  `nickname` VARCHAR(255) NOT NULL,\n" +
-                    "  `ctpwd` VARCHAR(255) NOT NULL,\n" +
+                    "  `ctpwd` TEXT(2000) NOT NULL,\n" +
                     "  PRIMARY KEY (`domain`),\n" +
                     "  UNIQUE INDEX `domain_UNIQUE` (`domain` ASC))\n" +
                     "ENGINE = InnoDB\n" +
