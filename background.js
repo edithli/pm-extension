@@ -223,7 +223,7 @@ function getDomain(url){
 }
 
 function test() {
-	decryptPwd("pwd", encryptPwd("pwd", "Banana5233483"));
+	// decryptPwd("pwd", encryptPwd("pwd", "password12"));
 	// var pwd = "password";
 	// var codes = encodePwd("helloworld");
 	// // decodePwd(codes);
@@ -284,7 +284,7 @@ function encrypt(password, arr){
 		str += arr[i].toString(16);
 		// console.log("arr " + i + " : " + arr[i].toString(16));
 	}
-	console.log("plaintext: " + str);
+	// console.log("plaintext: " + str);
 	// compute aes key
 	var salt = sjcl.random.randomWords(SALT_WORD_LEN, 0);
 	// console.log("salt: " + sjcl.codec.hex.fromBits(salt));
@@ -314,7 +314,7 @@ function decrypt(password, ct){
 	// var adata = sjcl.codec.utf8String.fromBits(rp.adata);
 	// if (adata != ADATA)
 	// 	throw new sjcl.exception.invalid("adata not correct!!");
-	console.log("decrypt");
+	// console.log("decrypt");
 
 	var salt = sjcl.bitArray.bitSlice(ct, 0, SALT_BIT_LEN);
 	var iv = sjcl.bitArray.bitSlice(ct, SALT_BIT_LEN, SALT_BIT_LEN + IV_BIT_LEN);
@@ -327,7 +327,7 @@ function decrypt(password, ct){
 	var aes = new sjcl.cipher.aes(key);
 	var ptbits = sjcl.mode.ctr.decrypt(aes, ciphertext, iv);
 	var pt = sjcl.codec.hex.fromBits(ptbits);
-	console.log("plaintext: " + pt);
+	// console.log("plaintext: " + pt);
 
 	// split the string into arr
 	var arr = new Array(MAX_PT_LEN * ARR_LEN); 
@@ -362,22 +362,39 @@ function decodePwd(arr){
  	stack.push("G");
  	while (stack.length > 0 && index < arr.length){
  		var lhs = stack.pop();
+ 		// decode a new rule
  		var codeArr = new Uint32Array(ARR_LEN);
  		for (var i = 0; i < ARR_LEN; i++, index++)
  			codeArr[i] = arr[index];
  		var rule = decodeRule(codeArr, lhs);
  		var rhs = rule.rhs;
- 		console.log("get rule: " + rule.toString());
+ 		// console.log("get rule: " + rule.toString());
 		pt.push(rule);
  		// get right hand side non-terminals
  		var nonTList = new Array();
  		if (lhs == "G" && rhs != "|_|") {
 			nonTList = rhs.split(",");
 			nonTList.reverse();
-		} else if (lhs.charAt(0) == "W") { //--------------------------------------------
-			for (var i = 0; i < rhs.length; i++)
-				nonTList.push("L_" + rhs.charAt(i));
-			nonTList.reverse();
+		} else if (lhs.startsWith("W")) { //--------------------------------------------
+			// decode next L rule and L_ rules
+			for (var i = 0; i < ARR_LEN; i++, index++)
+				codeArr[i] = arr[index];
+			rule = decodeRule(codeArr, "L");
+			pt.push(rule);
+			switch (rule.rhs){
+				case "lower": 
+				case "UPPER":
+				case "Caps":
+					break;
+				case "l33t":
+					for (var i = 0; i < rhs.length; i++)
+						nonTList.push("L_" + rhs.charAt(i));
+					nonTList.reverse();
+					break;
+			}
+			// for (var i = 0; i < rhs.length; i++)
+			// 	nonTList.push("L_" + rhs.charAt(i));
+			// nonTList.reverse();
 		} else if (lhs == "T") {
 			for (var i = 0; i < rhs.length; i++)
 				nonTList.push("T_" + rhs.charAt(i));
@@ -437,7 +454,7 @@ function parse(s) {
 			if (s.charAt(i).match("[0-9]")){
 				pt.push(new Rule("G", "D1,G"));
 				pt.push(new Rule("D1", s.charAt(i)));
-			} else if (s.charAt(i).match("[a-zA-Z]")){ // ---------------------------------------------------------------
+			} else if (s.charAt(i).match("[a-zA-Z]")){ 
 				pt.push(new Rule("G", "W1,G"));
 				pt.push(new Rule("W1", s.charAt(i).toLowerCase()));
 				if (s.charAt(i).match("[a-z]")){
@@ -459,9 +476,23 @@ function parse(s) {
 		for (var i = 0; i < lhsList.length; i++) {
 			var r = new Rule(lhsList[i], rhsList[i]);
 			pt.push(r);
-			if (r.lhs.charAt(0) == "W" || r.lhs == "T") {
+			if (r.lhs == "T") {
 				for (var j = 0; j < r.rhs.length; j++){
 					pt.push(base.extras.shift());
+				}
+			} else if (r.lhs.startsWith("W")){
+				var lrule = base.extras.shift();
+				switch (lrule.rhs) {
+					case "lower":
+					case "UPPER":
+					case "Caps":
+						pt.push(lrule);
+						break;
+					case "l33t":
+						pt.push(lrule);
+						for (var j = 0; j < r.rhs.length; j++)
+							pt.push(base.extras.shift());
+						break;
 				}
 			}
 		}
@@ -471,12 +502,34 @@ function parse(s) {
 }
 
 function derive(pt) {
-	console.log("derive parse tree: " + pt.toString());
+	// console.log("derive parse tree: " + pt.toString());
 	var str = "";
 	var buff = "";
 	for (var i = 0; i < pt.length; i++) {
 		if (pt[i].lhs.startsWith("W")) {
-			
+			buff = pt[i].rhs;
+		} else if (pt[i].lhs == "L") {
+			switch (pt[i].rhs) {
+				case "lower": 
+					str += buff;
+					buff = "";
+					break;
+				case "UPPER":
+					str += buff.toUpperCase();
+					buff = "";
+					break;
+				case "Caps":
+					str += buff.charAt(0).toUpperCase() + buff.substring(1);
+					buff = "";
+					break;
+				default: break;
+			}
+		} else if (pt[i].lhs.startsWith("L_") && buff != "") {
+			str += pt[i].rhs;
+		} else if (pt[i].lhs == "G" || pt[i].lhs == "T") {
+			continue;
+		} else {
+			str += pt[i].rhs;
 		}
 
 		// if (pt[i].lhs.charAt(0).startsWith("L_")){
@@ -540,6 +593,7 @@ function parseWord(s) {
 				rule.addExtra(new Rule("L_" + word.charAt(i), s.charAt(i)));
 			}
 		}
+
 		// for (var i = 0; i < word.length; i++) 
 		// 	rule.addExtra(new Rule("L_" + word.charAt(i), s.charAt(i)));
 		return rule;
@@ -793,6 +847,13 @@ function Rule(lhs, rhs) {
 				p *= this.extras[i].getProb();
 			}
 			return p;
+		} else if (this.lhs.startsWith("W")){
+			this.prob =  freq / grammar[lhs]._total;
+			for (var i = 0; i < this.extras.length; i++) {
+				if (this.extras[i].getProb() == 0.0)
+					return 0.0;
+			}
+			return this.prob;
 		} else {
 			this.prob =  freq / grammar[lhs]._total;
 			return this.prob;
@@ -837,6 +898,7 @@ function Rule(lhs, rhs) {
 	}
 }
 
+// unfinished
 function HoneyVault(checksome, pwdList){
 	this.pwdList = pwdList;
 	this.checksome = checksome;
@@ -845,6 +907,7 @@ function HoneyVault(checksome, pwdList){
 	}
 }
 
+// untested
 function SubGrammar(rules) {
 	this.__subgrammar = {};
 	this._buildSubGrammar = function(rules){
