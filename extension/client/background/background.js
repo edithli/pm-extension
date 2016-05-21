@@ -113,20 +113,10 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 				console.log("cipherChecksum: " + cipherChecksum);
 				sendResponse({cipherChecksum: cipherChecksum});
 			}
-		} else if (url == USER_PAGE_URL) {
-			if (request.checkURL){
-				if (!checksum)
-					console.error("problem with userpage's checksum");
-				sendResponse({userpage: true, checksum: checksum});
-			} else if (request.decryption) {
-				var list = request.content;
-				for (var i = 0; i < list.length; i++){
-					list[i] = decryptPwd(mpw, list[i]);
-				}
-				sendResponse({content: list});
-			}
+		} else if (url == ){
+
 		} else if (request.checkURL){
-			// check login first
+			// check login first !!!!!!!!!!
 			if (!username || !mpw){
 				sendResponse({nothing: true});
 			} else {
@@ -215,7 +205,6 @@ var mpw, username, checksum;
  var IV_BIT_LEN = 128;
  var LOGIN_URL = "http://localhost:8080/pm-server/login.html";
  var REGISTER_URL = "http://localhost:8080/pm-server/register.html";
- var USER_PAGE_URL = "http://localhost:8080/pm-server/userpage.jsp";
  var DATA_SERVER_URL = "http://localhost:8080/pm-server/AddAccountServlet";
  var URL_QUERY_URL = "http://localhost:8080/pm-server/QueryURLServlet";
 

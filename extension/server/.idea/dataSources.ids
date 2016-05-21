@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="dataSourceStorage">
+  <data-source name="MySQL - pm-extension@localhost" uuid="86fff35e-f551-4d9e-bb0a-75d66b07e2dd">
+    <database-info product="MySQL" version="5.7.12-log" jdbc-version="4.0" driver-name="MySQL Connector Java" driver-version="mysql-connector-java-5.1.38 ( Revision: fe541c166cec739c74cc727c5da96c1028b4834a )">
+      <extra-name-characters>#@</extra-name-characters>
+      <identifier-quote-string>`</identifier-quote-string>
+    </database-info>
+    <case-sensitivity plain-identifiers="lower" quoted-identifiers="lower"/>
+    <database-model serializer="dbm" rdbms="MYSQL" format-version="2.5">
+      <schema id="1" name="pm-extension"/>
+      <table id="2" parent="1" name="table_hello"/>
+      <table id="3" parent="1" name="table_user1"/>
+      <table id="4" parent="1" name="user_info"/>
+      <column id="5" parent="2" name="domain">
+        <mandatory>1</mandatory>
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="6" parent="2" name="ac_name">
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="7" parent="2" name="nickname">
+        <mandatory>1</mandatory>
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="8" parent="2" name="ctpwd">
+        <mandatory>1</mandatory>
+        <data-type>text</data-type>
+      </column>
+      <index id="9" parent="2" name="domain_UNIQUE">
+        <columns>domain</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="10" parent="2" name="domain_UNIQUE">
+        <columns>domain</columns>
+        <underlying-index>domain_UNIQUE</underlying-index>
+      </key>
+      <key id="11" parent="2" name="PRIMARY">
+        <columns>domain</columns>
+        <primary>1</primary>
+      </key>
+      <column id="12" parent="3" name="domain">
+        <mandatory>1</mandatory>
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="13" parent="3" name="ac_name">
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="14" parent="3" name="nickname">
+        <mandatory>1</mandatory>
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="15" parent="3" name="ctpwd">
+        <mandatory>1</mandatory>
+        <data-type>text</data-type>
+      </column>
+      <index id="16" parent="3" name="domain_UNIQUE">
+        <columns>domain</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="17" parent="3" name="domain_UNIQUE">
+        <columns>domain</columns>
+        <underlying-index>domain_UNIQUE</underlying-index>
+      </key>
+      <key id="18" parent="3" name="PRIMARY">
+        <columns>domain</columns>
+        <primary>1</primary>
+      </key>
+      <column id="19" parent="4" name="username">
+        <mandatory>1</mandatory>
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="20" parent="4" name="password_hint">
+        <mandatory>1</mandatory>
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="21" parent="4" name="cipher_checksum">
+        <mandatory>1</mandatory>
+        <data-type>text</data-type>
+      </column>
+      <index id="22" parent="4" name="username_UNIQUE">
+        <columns>username</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="23" parent="4" name="PRIMARY">
+        <columns>username</columns>
+        <primary>1</primary>
+      </key>
+      <key id="24" parent="4" name="username_UNIQUE">
+        <columns>username</columns>
+        <underlying-index>username_UNIQUE</underlying-index>
+      </key>
+    </database-model>
+  </data-source>
+</component>

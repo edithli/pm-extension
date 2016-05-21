@@ -77,31 +77,6 @@ chrome.runtime.sendMessage({checkURL: true}, function(response){
 					document.getElementById("register-form").submit();
 			});
 		});
-	} else if (response.userpage) {
-		var checksum = response.checksum;
-		document.getElementById("checksum").textContent = checksum;
-		var ctpwds = document.getElementsByClassName("password");
-		var list = new Array(ctpwds.length), ptpwds;
-		for (var i = 0; i < ctpwds.length; i++) {
-			list[i] = ctpwds[i].innerText;
-		}
-		var status = 0;
-		chrome.runtime.sendMessage({decryption: true, content: list}, function(response){
-			ptpwds = response.content;
-			document.getElementById("show-password").addEventListener('click', function(){
-				status = 1;
-				 for (var i = 0; i < ctpwds.length; i++){
-				 	ctpwds[i].innerText = ptpwds[i];
-				 }
-			});
-			document.getElementById("hide-password").addEventListener('click', function(){
-				if (status == 1){
-					for (var i = 0; i < ctpwds.length; i++)
-						ctpwds[i].innerText = list[i];
-					status = 0;
-				}
-			});
-		});
 	} else if (response.autofill){
 		var username = response.username;
 		var thisurl = response.url;

@@ -10,9 +10,6 @@
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%
-    if (response == null){
-        User user = new User("please login", "please login", "please login");
-    }
     User user = (User)request.getSession().getAttribute("user");
     if (user == null){
         response.sendRedirect("/login.html");
@@ -28,21 +25,21 @@
 <body>
     <div>
         <p>Username: <span><%=username%></span></p>
-        <p>Checksum: <span><%=cipherChecksum%></span></p>
+        <p>Checksum: <span id="checksum">TEST</span></p>
     </div>
+    <button id="show-password">SHOW PASSWORD</button>
+    <button id="hide-password">HIDE PASSWORD</button>
     <table>
         <tr>
             <th>域名</th>
             <th>用户名</th>
             <th>密码</th>
-            <th>操作</th>
         </tr>
         <%for(LoginEntry e: list){%>
         <tr>
             <td class="domain"><%=e.domain%></td>
             <td class="nickname"><%=e.nickname%></td>
             <td class="password"><%=e.ctpwd%></td>
-            <td><button>解密</button></td>
         </tr>
         <%}%>
     </table>

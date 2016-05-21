@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Welcome Login</title>
+</head>
+<body>
+    <form method="post" id="login-form" >
+        <div>
+            <label id="user-name-label">Username: </label>
+            <input type="text" name="username" id="username-input"/>
+        </div>
+    </form>
+    <div>
+        <label id="pwd-label">Password: </label>
+        <input type="password" id="mpw-input" />
+    </div>
+    <button id="cancel" onclick="window.close();">Cancel</button>
+    <button id="submit" >Login</button>
+    <a href="/pm-server/register.html" id="register-link">Register</a>
+    <input id="cipher-checksum" style="display: none;">
+</body>
+</html>
