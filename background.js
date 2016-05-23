@@ -78,6 +78,15 @@ function closeCurrentTab(){
 			chrome.tabs.remove(tabs[0].id);
 	});
 }
+
+function setPopupChecksum() {
+	var views = chrome.extension.getViews({type: "popup"});
+	for (var i = 0; i < views.length; i++){
+		if (checksum)
+			views[i].document.getElementById("checksum").innerText = checksum;
+	}
+}
+
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 	// console.log("enter listener");
 	if (sender.tab) {
@@ -94,6 +103,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 				var cipherChecksum = String(request.cipherChecksum);
 				checksum = decryptPwd(mpw, cipherChecksum);
 				console.log("bk: got login info: " + username + " " + mpw + " " + checksum);
+				sendResponse({checksum: checksum});
 				if (request.closeTab){
 					closeCurrentTab();
 				}
@@ -154,7 +164,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 					domain: domain
 					// url: url
 				}));
-				sendResponse({nothing: true});
+				sendResponse({nothing: true, checksum: checksum});
 			}
 
 			// sendResponse({normalPage: true});
@@ -196,7 +206,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 				}));
 			}
 		}else console.log("unexpected request: \n" + request);
-	} 
+	}
+	setPopupChecksum(); 
 });
 
 var mpw, username, checksum;
