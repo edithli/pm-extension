@@ -2,29 +2,90 @@
 <html lang="en">
 <head>
     <title>register</title>
+    <meta charset="UTF-8" />
+    <style type="text/css">
+        html {
+            height: 100%;
+            width: 100%;
+        }
+        body {
+            height: 100%;
+            width: 100%;
+            display: -webkit-flex;
+            display:         flex;
+            -webkit-align-items: center;
+            align-items: center;
+            -webkit-justify-content: center;
+            justify-content: center;
+        }
+        #register-div {
+            width: 30%;
+            height: 30%;
+            position: relative;
+            background-color: wheat;
+            padding: 20px;
+            border: 2px solid lightgray;
+            -webkit-border-radius: 5px;
+            -moz-border-radius:5px;
+            border-radius: 5px;
+        }
+        .entry-div {
+            display: block;
+            clear: left;
+            padding: 5px;
+        }
+        input {
+            width: 200px;
+            height: 20px;
+            border: 1px solid lightgray;
+            border-radius: 5px;
+        }
+        .entry-div label {
+            width: 100%;
+            padding-bottom: 5px;
+            alignment: right;
+        }
+        .entry-div input {
+            width: 100%;
+            alignment: left;
+        }
+        #welcome-register {
+            width: 100%;
+            margin: 10px;
+            text-align: center;
+        }
+        #register-submit {
+            background-color: white;
+            border: 2px solid lightgray;
+            border-radius: 5px;
+            font-size: 1em;
+            width: 100%;
+            height: 30px;
+            margin: 5px;
+        }
+    </style>
 </head>
 <body>
-    <form method="post" action="RegisterServlet" id="register-form" onsubmit="return checkForm()">
-        <div>
-            <label id="user-name-label">Username:</label>
-            <input id="username-input" type="text" name="username"/>
+    <div id="register-div">
+        <div id="welcome-register">欢迎注册！</div>
+        <form method="post" action="RegisterServlet" id="register-form" onsubmit="return checkForm()">
+            <div class="entry-div">
+                <label for="username-input">用户名：</label><input id="username-input" type="text" name="username"/>
+            </div>
+            <div class="entry-div">
+                <label for="password-hint">密码提示：</label><input id="password-hint" type="text" name="password-hint"/>
+            </div>
+            <div style="display: none">
+                <input id="cipher-checksum" name="cipher-checksum" type="text" style="display: none;" />
+            </div>
+        </form>
+        <div class="entry-div">
+            <label for="password-input">主密码：</label><input id="password-input" type="password"/>
         </div>
-        <div>
-            <label id="password-hint-label">Password Hint: </label>
-            <input id="password-hint" type="text" name="password-hint"/>
+        <div class="entry-div">
+            <label for="checksum-input">校验码：</label><input id="checksum-input" type="text" />
         </div>
-        <div>
-            <input id="cipher-checksum" name="cipher-checksum" type="text" style="display: none;" />
-        </div>
-    </form>
-    <div>
-        <label id="password-label">Master Password: </label>
-        <input id="password-input" type="password"/>
+        <button id="register-submit">确定</button>
     </div>
-    <div>
-        <label id="checksum-label">Checksum: </label>
-        <input id="checksum-input" type="text" />
-    </div>
-    <button id="register-submit">Submit</button>
 </body>
 </html>

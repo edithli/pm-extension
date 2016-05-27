@@ -23,7 +23,7 @@
 	"content_scripts": [
 		{
 			"matches": ["http://*/*", "https://*/*", "ftp://*/*"],
-			"js": ["content_script.js"]
+			"js": ["content_script.js", "jquery-2.2.4.min.js"]
 		}
 	],
 

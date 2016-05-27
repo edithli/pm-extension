@@ -175,7 +175,7 @@ function detectLoginForm(){
 		var input = inputs[i];
 		// add buttons to account id and password input elements
 		if ( (input.type == 'password' || input.name == 'password') && input.id != '__popup_new_password_id' ){
-			input.style.border = "3px solid red";
+			// input.style.border = "3px solid red";
 			// addButton(input);
 			hasPassword = true;
 			hasUsername = false;
@@ -187,7 +187,7 @@ function detectLoginForm(){
 			console.log('find password id: ' + passwordId);
 			addPopupOpener(input);
 		} else if ( (input.type == 'text' || input.type == 'email') && input.id != '__popup_new_username_id'  && hasPassword && !hasUsername) {
-			input.style.border = "3px solid yellow";
+			// input.style.border = "3px solid yellow";
 			hasPassword = false;
 			hasUsername = true;
 			usernameId = input.id;
@@ -290,14 +290,14 @@ function normalPage(){
 			var input = inputs[i];
 			// add buttons to account id and password input elements
 			if ( (input.type == 'password' || input.name == 'password') && input.id != '__popup_new_password_id' ){
-				input.style.border = "3px solid red";
+				// input.style.border = "3px solid red";
 				// addButton(input);
 				hasPassword = true;
 				passwordId = input.id;
 				console.log('find password id: ' + passwordId);
 				addPopupOpener(input);
 			} else if ( (input.type == 'text' || input.type == 'email') && input.id != '__popup_new_username_id'  && hasPassword) {
-				input.style.border = "3px solid yellow";
+				// input.style.border = "3px solid yellow";
 				hasPassword = false;
 				usernameId = input.id;
 				console.log('find username id: ' + usernameId);
@@ -364,15 +364,59 @@ function normalPage(){
 }
 
 function addPopupOpener(input) {
+	if (!input.style.display || input.style.display == "inline-block")
+		input.style.display = "block";
+
+	// $("#"+passwordId).wrap("<img src=\"" + chrome.extension.getURL("icons/icon.png") + "\" name=\"popupOpenerImg\" onMouseOver=\"\"></img>");
+	var inputStyle = input.currentStyle || window.getComputedStyle(input);
+	console.log("input border: " + inputStyle.borderBottomWidth);
+	// console.log("padding: " + inputStyle.paddingBottom);
+	var bottomMargin = inputStyle.marginBottom.toString();
+	var bottomBorder = inputStyle.borderBottomWidth.toString();
+	// var inputHeight = inputStyle.height.toString();
+	var inputHeight = input.scrollHeight;
+	var rightMargin = inputStyle.marginRight.toString();
+	console.log("bottomMargin: " + bottomMargin + "\t" + "input height: " + inputHeight + "\t" + "border: " + bottomBorder + "\t" + "right margin: " + rightMargin);
+
+	var marginMeasure = bottomMargin.substr(-2);
+	var heightMeasure = bottomBorder.substr(-2);
+	var imgMargin = 8;
+	if (marginMeasure != heightMeasure){
+		console.error("measure of margin and height distinct: margin: " + bottomMargin + " height: " + inputHeight);
+		imgMargin = "0px";
+	} else {
+		if (bottomMargin.match("\.")){
+			imgMargin += parseFloat(bottomMargin);
+		} else imgMargin += parseInt(bottomMargin);
+		if (bottomBorder.match("\."))
+			imgMargin += parseFloat(bottomBorder);
+		else imgMargin += parseInt(bottomBorder);
+		if (inputHeight.toString().match("\."))
+			imgMargin += (parseFloat(inputHeight) / 2);
+		else imgMargin += (parseInt(inputHeight) / 2);
+		imgMargin = "-" + imgMargin + marginMeasure;
+	}
+	console.log("img margin: " + imgMargin);
+
 	var inputRect = input.getBoundingClientRect();
 	var openerDiv = document.createElement("div");
 	openerDiv.setAttribute("name", "popupOpenerDiv");
 	openerDiv.style.width = "16px";
 	openerDiv.style.height = "16px";
-	openerDiv.style.position = "absolute";
-	// openerDiv.style.verticalAlign = "top";
-	openerDiv.style.bottom = inputRect.bottom;
-	openerDiv.style.right = inputRect.right;
+	openerDiv.style.display = "block";
+	openerDiv.style.float = "right";
+	openerDiv.style.marginTop = imgMargin;
+	openerDiv.style.marginRight = rightMargin;
+	openerDiv.style.zIndex = "999";
+	// var topMargin = "-" + (input.scrollHeight / 2 + 8) + "px";
+	// console.log("top margin: " + topMargin);
+	// // openerDiv.style.marginTop = topMargin;
+	// console.log("input height: " + input.scrollHeight);
+	// console.log("or: " + inputRect.height);
+	// openerDiv.style.position = "absolute";
+	// // openerDiv.style.verticalAlign = "top";
+	// openerDiv.style.bottom = inputRect.bottom;
+	// openerDiv.style.right = inputRect.right;
 	var openerImg = document.createElement("img");
 	openerImg.setAttribute("src", chrome.extension.getURL("icons/icon.png"));
 	openerImg.setAttribute("name", "popupOpenerImg");
@@ -383,7 +427,8 @@ function addPopupOpener(input) {
 	openerDiv.appendChild(openerImg);
 	// document.body.appendChild(openerDiv);
 	var parent = input.parentNode;
-	parent.appendChild(openerDiv);
+	// parent.appendChild(openerDiv);
+	parent.insertBefore(openerDiv, input.nextSibling);
 }
 
 function addPopup(){
