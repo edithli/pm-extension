@@ -1,12 +1,12 @@
 {
 	"manifest_version": 2,
 
-	"name": "Getting started",
-	"description": "This extension shows a Google Image search result for the current page",
+	"name": "Honey Password Manager",
+	"description": "防离线攻击的用户密码管理器，更安全的用户密码管理工具",
 	"version": "1.0",
 
 	"browser_action": {
-	    "default_icon": "resource/icons/icon.png",
+	    "default_icon": "icons/icon.png",
 	    "default_popup": "popup/popup.html"
 	},
 
@@ -17,17 +17,17 @@
 	],
 
 	"background": {
-		"page": "background.html"
+		"page": "bkg/background.html"
 	},
 
 	"content_scripts": [
 		{
 			"matches": ["http://*/*", "https://*/*", "ftp://*/*"],
-			"js": ["content_script.js"]
+			"js": ["front/content_script.js"]
 		}
 	],
 
 	"web_accessible_resources": [
-		"resource/icons/icon.png"
+		"icons/icon.png"
 	] 
 }

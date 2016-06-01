@@ -1,22 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Welcome Login</title>
+    <meta charset="utf-8" />
+    <title>WELCOME LOGIN</title>
+    <style>
+        html {
+            height: 100%;
+            width: 100%;
+        }
+        body {
+            height: 100%;
+            width: 100%;
+            display: -webkit-flex;
+            display:         flex;
+            -webkit-align-items: center;
+            align-items: center;
+            -webkit-justify-content: center;
+            justify-content: center;
+        }
+        #login-div {
+            width: 30%;
+            height: 25%;
+            position: relative;
+            background-color: rgb(188, 165, 247);
+            padding: 20px;
+            border: 2px solid lightgray;
+            -webkit-border-radius: 5px;
+            -moz-border-radius:5px;
+            border-radius: 5px;
+            min-width:200px;
+            min-height: 230px;
+            color: rgb(153, 82, 2);
+        }
+        #welcome-login{
+            width: 100%;
+            margin: 10px;
+            text-align: center;
+        }
+        .entry-div {
+            display: block;
+            clear: left;
+            padding: 5px;
+        }
+        .entry-div label {
+            width: 100%;
+            padding-bottom: 5px;
+            alignment: right;
+        }
+        .entry-div input {
+            height: 25px;
+            border: 1px solid lightgray;
+            border-radius: 5px;
+            width: 100%;
+            alignment: left;
+        }
+        button {
+            background-color: white;
+            border: 1px solid lightgray;
+            border-radius: 5px;
+            font-size: 1em;
+            height: 25px;
+            padding: 0;
+            margin-top: 20px;
+            width: 40%;
+        }
+        #cancel {
+            float: left;
+            margin-left: 5px;
+        }
+        #submit {
+            float: right;
+            margin-right: 5px;
+        }
+        #register-link {
+            clear: left;
+            font-size: 1em;
+            float: right;
+            margin: 10px 5px 0 0;
+        }
+    </style>
 </head>
 <body>
-    <form method="post" id="login-form" >
-        <div>
-            <label id="user-name-label">Username: </label>
-            <input type="text" name="username" id="username-input"/>
+    <div id="login-div">
+        <div id="welcome-login">请登录！</div>
+        <form method="post" id="login-form" >
+            <div class="entry-div">
+                <label for="username-input">用户名：</label><input type="text" name="username" id="username-input"/>
+            </div>
+        </form>
+        <div class="entry-div">
+            <label for="mpw-input">主密码：</label><input type="password" id="mpw-input" />
         </div>
-    </form>
-    <div>
-        <label id="pwd-label">Password: </label>
-        <input type="password" id="mpw-input" />
+        <button id="cancel" onclick="window.close();">取消</button>
+        <button id="submit" >登录</button>
+        <a href="/pm-server/register.html" id="register-link">注册</a>
+        <input id="cipher-checksum" style="display: none;">
     </div>
-    <button id="cancel" onclick="window.close();">Cancel</button>
-    <button id="submit" >Login</button>
-    <a href="/pm-server/register.html" id="register-link">Register</a>
-    <input id="cipher-checksum" style="display: none;">
 </body>
 </html>

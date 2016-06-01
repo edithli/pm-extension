@@ -1,27 +1,8 @@
-<%@ page import="core.User" %>
-<%@ page import="core.LoginEntry" %>
-<%@ page import="java.util.List" %>
-<%--
-  Created by IntelliJ IDEA.
-  User: lss
-  Date: 2016/5/9
-  Time: 13:37
-  To change this template use File | Settings | File Templates.
---%>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%
-    User user = (User)request.getSession().getAttribute("user");
-    if (user == null){
-        response.sendRedirect("/login.html");
-    }
-    String username = user.username;
-    String cipherChecksum = user.cipherChecksum;
-    List<LoginEntry> list = user.getEntries();
-%>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <title>主页</title>
+    <meta charset="UTF-8">
+    <title>homepage</title>
     <style>
         html {
             height: 100%;
@@ -81,16 +62,20 @@
             border: 3px solid brown;
             height: 20px;
         }
+        .pwd {
+            display: none;
+        }
         td, th{
             width: 30%;
         }
     </style>
 </head>
+<body>
     <div id="container">
         <div id="user-info">
             <div>WELCOME ABOARD</div>
-            <p>Username: <span><%=username%></span></p>
-            <p>Checksum: <span id="checksum">TEST</span></p>
+            <p>用户名：<span>TEST</span></p>
+            <p>校验码：<span id="checksum">TEST</span></p>
         </div>
         <table>
             <tr>
@@ -98,13 +83,12 @@
                 <th>用户名</th>
                 <th>密码</th>
             </tr>
-            <%for(LoginEntry e: list){%>
             <tr>
-                <td class="domain"><%=e.domain%></td>
-                <td class="nickname"><%=e.nickname%></td>
-                <td class="password"><%=e.ctpwd%></td>
+                <td class="domain">www.test.com</td>
+                <td class="nickname">TEST</td>
+                <td class="password">********</td>
+                <td class="pwd">********</td>
             </tr>
-            <%}%>
         </table>
         <button id="show-password">显示密码</button>
         <button id="hide-password">隐藏密码</button>

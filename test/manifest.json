@@ -1,0 +1,13 @@
+{
+	"manifest_version": 2,
+	"name": "TEST", 
+	"description": "simple test extension",
+	"version": "1.0",
+
+	"content_scripts": [
+		{
+			"matches": ["http://*/*", "https://*/*", "ftp://*/*"],
+			"js": ["test_script.js"]
+		}
+	]
+}

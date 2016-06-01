@@ -23,7 +23,7 @@ function getChecksum(){
 			}else checksum.textContent = xmlhttp.responseText;
 		}
 	}
-	xmlhttp.open("GET", "/ChecksumServlet");
+	xmlhttp.open("GET", "http://localhost:8080/pm-server/ChecksumServlet");
 	xmlhttp.send();
 }
 
@@ -43,5 +43,5 @@ document.addEventListener('DOMContentLoaded', function() {
 			};
 		})();
 	}
-	getChecksum();
+	// getChecksum();
 });

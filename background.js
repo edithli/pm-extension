@@ -73,7 +73,7 @@ loadJSON('data/vault_dist.cfg', function(text) {
 });
 
 function closeCurrentTab(){
-	chrome.tabs.query({active:true, currentWindow: true, url: LOGIN_URL, title: "Welcome Login"}, 
+	chrome.tabs.query({active:true, currentWindow: true, url: LOGIN_URL, title: "WELCOME LOGIN"}, 
 		function(tabs){
 			chrome.tabs.remove(tabs[0].id);
 	});
@@ -224,11 +224,11 @@ var mpw, username, checksum;
  var IV_WORD_LEN = 4;
  var SALT_BIT_LEN = 128;
  var IV_BIT_LEN = 128;
- var LOGIN_URL = "http://localhost:8080/pm-server/login.html";
- var REGISTER_URL = "http://localhost:8080/pm-server/register.html";
- var USER_PAGE_URL = "http://localhost:8080/pm-server/userpage.jsp";
- var DATA_SERVER_URL = "http://localhost:8080/pm-server/AddAccountServlet";
- var URL_QUERY_URL = "http://localhost:8080/pm-server/QueryURLServlet";
+ var LOGIN_URL = "http://10.131.1.36:8080/pm-server/login.html";
+ var REGISTER_URL = "http://10.131.1.36:8080/pm-server/register.html";
+ var USER_PAGE_URL = "http://10.131.1.36:8080/pm-server/userpage.jsp";
+ var DATA_SERVER_URL = "http://10.131.1.36:8080/pm-server/AddAccountServlet";
+ var URL_QUERY_URL = "http://10.131.1.36:8080/pm-server/QueryURLServlet";
 
 
 /*===================================================
