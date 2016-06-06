@@ -31,7 +31,7 @@ public class QueryURLServlet extends HttpServlet {
             sb.append(line);
         }
         JSONObject j = new JSONObject(sb.toString());
-        System.out.println("query url req: " + sb.toString());
+//        System.out.println("query url req: " + sb.toString());
         String username = j.getString("username");
         String domain = j.getString("domain");
         JSONObject result = new JSONObject();
@@ -48,7 +48,7 @@ public class QueryURLServlet extends HttpServlet {
                 result.append("password", e.ctpwd);
             }
         }
-        System.out.println("query url result: " + result.toString());
+//        System.out.println("query url result: " + result.toString());
         resp.getWriter().println(result.toString());
     }
 }

@@ -28,7 +28,7 @@ public class AddAccountServlet extends HttpServlet{
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        User user = (User)req.getSession().getAttribute("user");
+        User user = (User)req.getSession().getAttribute("main_user");
         PrintWriter out = resp.getWriter();
         if (user == null){
             System.out.println("No USER!!!!");

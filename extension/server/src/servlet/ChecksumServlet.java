@@ -21,7 +21,7 @@ public class ChecksumServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        User user = (User)req.getSession().getAttribute("user");
+        User user = (User)req.getSession().getAttribute("main_user");
         PrintWriter out = resp.getWriter();
         if (user == null){
             out.println("no_user");

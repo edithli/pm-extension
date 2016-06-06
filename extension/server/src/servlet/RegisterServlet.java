@@ -42,7 +42,7 @@ public class RegisterServlet  extends HttpServlet{
         DatabaseOperator db = DatabaseOperator.getInstance();
         System.out.println("insert user success: " + db.insertUser(user));
 //        output += "insert user success: " + db.insertUser(user);
-        req.getSession().setAttribute("user", user);
+        req.getSession().setAttribute("main_user", user);
 //        output += "</body></html>";
 //        out.println(output);
         resp.sendRedirect("userpage.jsp");

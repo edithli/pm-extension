@@ -1,6 +1,7 @@
 <%@ page import="core.User" %>
 <%@ page import="core.LoginEntry" %>
 <%@ page import="java.util.List" %>
+<%@ page import="java.util.ArrayList" %>
 <%--
   Created by IntelliJ IDEA.
   User: lss
@@ -10,13 +11,20 @@
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%
-    User user = (User)request.getSession().getAttribute("user");
+    User user = (User)(session.getAttribute("main_user"));
+    String username = "请登录";
+    String cipherChecksum = "请登录";
+    List<LoginEntry> list = new ArrayList<>();
     if (user == null){
-        response.sendRedirect("/login.html");
+        System.out.println("no user in user page");
+//        user = new User("TEST", "TEST", "TEST");
+        response.sendRedirect("login.html");
+    } else {
+        System.out.println("find user in session");
+        username = user.username;
+        cipherChecksum = user.cipherChecksum;
+        list = user.getEntries();
     }
-    String username = user.username;
-    String cipherChecksum = user.cipherChecksum;
-    List<LoginEntry> list = user.getEntries();
 %>
 <html>
 <head>
@@ -90,7 +98,8 @@
         <div id="user-info">
             <div>WELCOME ABOARD</div>
             <p>Username: <span><%=username%></span></p>
-            <p>Checksum: <span id="checksum">TEST</span></p>
+            <p>Checksum: <span id="checksum"><%=cipherChecksum%></span></p>
+            <button id="logout">退出</button>
         </div>
         <table>
             <tr>

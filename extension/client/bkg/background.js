@@ -210,6 +210,20 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 	setPopupChecksum(); 
 });
 
+chrome.extension.onConnect.addListener(function(port){
+	port.onMessage.addListener(function(msg){
+		if (msg == "getchecksum") {
+			port.postMessage((checksum ? checksum : "__TOLOGIN"));
+		} else if (msg == "logout") {
+			mpw = username = checksum = null;
+			var xhr = new XMLHttpRequest();
+			xhr.open("GET", LOGOUT_SERVER_URL);
+			xhr.send();
+			console.log("user logged out " + (mpw == null));
+		}
+	});
+});
+
 var mpw, username, checksum;
 
 /*===================================================
@@ -224,11 +238,13 @@ var mpw, username, checksum;
  var IV_WORD_LEN = 4;
  var SALT_BIT_LEN = 128;
  var IV_BIT_LEN = 128;
- var LOGIN_URL = "http://10.131.1.36:8080/pm-server/login.html";
- var REGISTER_URL = "http://10.131.1.36:8080/pm-server/register.html";
- var USER_PAGE_URL = "http://10.131.1.36:8080/pm-server/userpage.jsp";
- var DATA_SERVER_URL = "http://10.131.1.36:8080/pm-server/AddAccountServlet";
- var URL_QUERY_URL = "http://10.131.1.36:8080/pm-server/QueryURLServlet";
+ var mydomain = "10.131.1.36";
+ var LOGIN_URL = "http://" + mydomain + ":8080/pm-server/login.html";
+ var REGISTER_URL = "http://" + mydomain + ":8080/pm-server/register.html";
+ var USER_PAGE_URL = "http://" + mydomain + ":8080/pm-server/userpage.jsp";
+ var DATA_SERVER_URL = "http://" + mydomain + ":8080/pm-server/AddAccountServlet";
+ var URL_QUERY_URL = "http://" + mydomain + ":8080/pm-server/QueryURLServlet";
+ var LOGOUT_SERVER_URL = "http://" + mydomain + ":8080/pm-server/LogoutServlet";
 
 
 /*===================================================

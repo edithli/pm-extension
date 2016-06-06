@@ -45,3 +45,19 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 	// getChecksum();
 });
+
+var port1 = chrome.extension.connect({name: "getchecksum"});
+port1.postMessage("getchecksum");
+port1.onMessage.addListener(function(msg){
+	document.getElementById("checksum").textContent = (msg == "__TOLOGIN" ? "请登录" : msg);
+});
+
+function logout(){
+	var port2 = chrome.extension.connect({name: "logout"});
+	port2.postMessage("logout");
+}
+
+document.getElementById("logout").addEventListener("click", function(){
+	var port2 = chrome.extension.connect({name: "logout"});
+	port2.postMessage("logout");
+});

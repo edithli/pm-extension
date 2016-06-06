@@ -2,9 +2,10 @@
 console.log('content script running!');
 
 // Constants
-var LOGIN_URL = "http://localhost:8080/pm-server/login.html";
-var REGISTER_URL = "http://localhost:8080/pm-server/register.html";
-var URL_QUERY_URL = "http://localhost:8080/pm-server/QueryURLServlet";
+var mydomain = "10.131.1.36";
+var LOGIN_URL = "http://" + mydomain + ":8080/pm-server/login.html";
+var REGISTER_URL = "http://" + mydomain + ":8080/pm-server/register.html";
+var URL_QUERY_URL = "http://" + mydomain + ":8080/pm-server/QueryURLServlet";
 
 var passwordId, usernameId, checksum;
 
@@ -108,6 +109,7 @@ chrome.runtime.sendMessage({checkURL: true}, function(response){
 					console.log('entry info: ' + xhr.responseText);
 					var ctpwd = resp.password; 
 					var thispwd = ctpwd;   // @TODO !!!!!!!!!!!!!!!!
+					console.log("user password: " + thispwd);
 					if (passwordId && usernameId){
 						document.getElementById(usernameId).value = resp.nickname;
 						document.getElementById(passwordId).value = thispwd;
@@ -230,6 +232,7 @@ function dialogOpenerHandler(){
 				console.log(response.done);
 			});
 			closePopup();
+			window.location.reload();
 		}
 	}
 }

@@ -28,8 +28,10 @@ public class LoginServlet extends HttpServlet{
         // login page should use ajax to check username
         PrintWriter out = resp.getWriter();
         if (user != null){
-            req.getSession().setAttribute("user", user);
-            System.out.println("output checksum: " + user.cipherChecksum);
+            req.getSession().setAttribute("main_user", user);
+            System.out.println("session created in login: " + (req.getSession(false) != null));
+            System.out.println("session added user: " + user.toString());
+//            System.out.println("output checksum: " + user.cipherChecksum);
             out.println(user.cipherChecksum);
         }else{
             System.out.println("user not found");
