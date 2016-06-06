@@ -238,7 +238,7 @@ var mpw, username, checksum;
  var IV_WORD_LEN = 4;
  var SALT_BIT_LEN = 128;
  var IV_BIT_LEN = 128;
- var mydomain = "10.131.1.36";
+ var mydomain = "localhost";
  var LOGIN_URL = "http://" + mydomain + ":8080/pm-server/login.html";
  var REGISTER_URL = "http://" + mydomain + ":8080/pm-server/register.html";
  var USER_PAGE_URL = "http://" + mydomain + ":8080/pm-server/userpage.jsp";

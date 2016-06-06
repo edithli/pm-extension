@@ -47,13 +47,10 @@
         }
         #container {
             width: 60%;
-            height: 100%;
             position: relative;
             background-color: antiquewhite;
             padding: 20px;
             border: 2px solid lightgray;
-            border-bottom: 0;
-            border-top: 0;
             min-width:200px;
             min-height: 300px;
             max-width: 550px;
@@ -82,8 +79,9 @@
         }
         table {
             width: 100%;
-            margin-top: 10px;
+            margin-top: 30px;
             text-align: center;
+            float: right;
         }
         table tr {
             border: 3px solid brown;
@@ -96,11 +94,12 @@
 </head>
     <div id="container">
         <div id="user-info">
-            <div>WELCOME ABOARD</div>
-            <p>Username: <span><%=username%></span></p>
-            <p>Checksum: <span id="checksum"><%=cipherChecksum%></span></p>
-            <button id="logout">退出</button>
+            <div>欢迎使用！</div>
+            <p>用户名：<span><%=username%></span></p>
+            <p>校验码：<span id="checksum"><%=cipherChecksum%></span></p>
         </div>
+        <button id="show-password">显示密码</button>
+        <button id="hide-password">隐藏密码</button>
         <table>
             <tr>
                 <th>域名</th>
@@ -115,8 +114,6 @@
             </tr>
             <%}%>
         </table>
-        <button id="show-password">显示密码</button>
-        <button id="hide-password">隐藏密码</button>
     </div>
 </body>
 </html>

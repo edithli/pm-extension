@@ -2,7 +2,7 @@
 console.log('content script running!');
 
 // Constants
-var mydomain = "10.131.1.36";
+var mydomain = "localhost";
 var LOGIN_URL = "http://" + mydomain + ":8080/pm-server/login.html";
 var REGISTER_URL = "http://" + mydomain + ":8080/pm-server/register.html";
 var URL_QUERY_URL = "http://" + mydomain + ":8080/pm-server/QueryURLServlet";

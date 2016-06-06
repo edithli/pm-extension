@@ -28,9 +28,9 @@ function getChecksum(){
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-	getCurrentURL(function(url){
-		document.getElementById('url').textContent = url;
-	});
+	// getCurrentURL(function(url){
+	// 	document.getElementById('url').textContent = url;
+	// });
 	var links = document.getElementsByTagName("a");
 	for (var i = links.length - 1; i >= 0; i--) {
 		(function() {
@@ -44,6 +44,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		})();
 	}
 	// getChecksum();
+
+	document.getElementById("logout").addEventListener("click", function(){
+		var port2 = chrome.extension.connect({name: "logout"});
+		port2.postMessage("logout");
+	});
 });
 
 var port1 = chrome.extension.connect({name: "getchecksum"});
@@ -52,12 +57,7 @@ port1.onMessage.addListener(function(msg){
 	document.getElementById("checksum").textContent = (msg == "__TOLOGIN" ? "请登录" : msg);
 });
 
-function logout(){
-	var port2 = chrome.extension.connect({name: "logout"});
-	port2.postMessage("logout");
-}
-
-document.getElementById("logout").addEventListener("click", function(){
-	var port2 = chrome.extension.connect({name: "logout"});
-	port2.postMessage("logout");
-});
+// function logout(){
+// 	var port2 = chrome.extension.connect({name: "logout"});
+// 	port2.postMessage("logout");
+// }
